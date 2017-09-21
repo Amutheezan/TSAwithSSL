@@ -4,7 +4,7 @@ import _config_constants_ as cons
 # Parameters related to training model (some constants are important to
 # look nice)
 
-LABEL_RATIO = 1.0/6
+LABEL_RATIO = 1.0 / 3
 TEST_LIMIT = 13000
 NO_OF_ITERATION = 10
 
@@ -21,4 +21,4 @@ if DEFAULT_CLASSIFIER == cons.CLASSIFIER_SVM:
     DEFAULT_KERNEL = cons.KERNEL_RBF
     DEFAULT_C_PARAMETER = 0.91
     DEFAULT_GAMMA_SVM = 0.03
-    DEFAULT_CLASS_WEIGHTS = {2.0: 1.47, 0.0: 1, -2.0: 3.125}
+    DEFAULT_CLASS_WEIGHTS = {cons.LABEL_POSITIVE: 1.47, cons.LABEL_NEUTRAL: 1, cons.LABEL_NEGATIVE: 3.125}

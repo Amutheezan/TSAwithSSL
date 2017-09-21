@@ -53,5 +53,4 @@ NEU_POST_UNI_GRAM_SELF = {}
 
 # Iteration based variables
 CURRENT_ITERATION = 0
-BEST_F_SCORE = 0
-CURRENT_F_SCORE = 0
+

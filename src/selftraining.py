@@ -1,8 +1,8 @@
 import csv
 import time
 
-import _config_globals_ as globals
 import _config_constants_ as cons
+import _config_controller_ as controller
 import _generic_commons_ as commons
 import _load_model_test_iterate_ as lmti
 
@@ -18,7 +18,7 @@ def self_training():
     print result
     csv_result.writerow(result)
 
-    while lmti.ds.CURRENT_ITERATION < globals.NO_OF_ITERATION:
+    while lmti.ds.CURRENT_ITERATION < controller.NO_OF_ITERATION:
         if lmti.ds.CURRENT_ITERATION == 0:
             is_self_training = False
         else:
