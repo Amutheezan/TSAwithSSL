@@ -1,10 +1,11 @@
 import _config_constants_ as cons
 import _config_setup_ as setup
 
-LABEL_LIMIT = int(2.0/3 * setup.LABEL_RATIO * cons.DATA_SET_SIZE)
+LABEL_LIMIT = int(cons.USE_RATIO * setup.LABEL_RATIO * cons.TRAIN_DATA_SIZE)
 POS_COUNT_LIMIT = int(LABEL_LIMIT * cons.POS_RATIO)
 NEG_COUNT_LIMIT = int(LABEL_LIMIT * cons.NEG_RATIO)
 NEU_COUNT_LIMIT = int(LABEL_LIMIT * cons.NEU_RATIO)
+UN_LABEL_LIMIT = int(cons.USE_RATIO * (1 - setup.LABEL_RATIO) * cons.TRAIN_DATA_SIZE)
 
 # CONSTANT RELATED TO SELF-TRAINING
 

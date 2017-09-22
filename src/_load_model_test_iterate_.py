@@ -44,10 +44,13 @@ def load_initial_dictionaries():
         un_label_count = 1
         count = 1
         for line in main:
+
             if count % 3 == 0:
+
                 if line[1] == "positive" and pos_count <= controller.POS_COUNT_LIMIT:
                     pos_dict.update({str(pos_count): str(line[2])})
                     pos_count += 1
+
                 elif line[1] == "positive" and pos_count > controller.POS_COUNT_LIMIT:
                     un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
                     un_label_count += 1
@@ -55,6 +58,7 @@ def load_initial_dictionaries():
                 if line[1] == "negative" and neg_count <= controller.NEG_COUNT_LIMIT:
                     neg_dict.update({str(neg_count): str(line[2])})
                     neg_count += 1
+
                 elif line[1] == "negative" and neg_count > controller.NEG_COUNT_LIMIT:
                     un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
                     un_label_count += 1
@@ -62,19 +66,38 @@ def load_initial_dictionaries():
                 if line[1] == "neutral" and neu_count <= controller.NEU_COUNT_LIMIT:
                     neu_dict.update({str(neu_count): str(line[2])})
                     neu_count += 1
+
                 elif line[1] == "neutral" and neu_count > controller.NEU_COUNT_LIMIT:
                     un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
                     un_label_count += 1
 
             if count % 3 == 1:
-                un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED]})
-                un_label_count += 1
+
+                if un_label_count <= controller.UN_LABEL_LIMIT:
+                    un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED]})
+                    un_label_count += 1
+
+                elif un_label_count > controller.UN_LABEL_LIMIT:
+
+                    if line[1] == "positive" and pos_count <= controller.POS_COUNT_LIMIT:
+                        pos_dict.update({str(pos_count): str(line[2])})
+                        pos_count += 1
+
+                    if line[1] == "negative" and neg_count <= controller.NEG_COUNT_LIMIT:
+                        neg_dict.update({str(neg_count): str(line[2])})
+                        neg_count += 1
+
+                    if line[1] == "neutral" and neu_count <= controller.NEU_COUNT_LIMIT:
+                        neu_dict.update({str(neu_count): str(line[2])})
+                        neu_count += 1
+
             count += 1
 
         ds.POS_DICT = pos_dict
         ds.NEG_DICT = neg_dict
         ds.NEU_DICT = neu_dict
         ds.UNLABELED_DICT = un_label_dict
+
     return
 
 

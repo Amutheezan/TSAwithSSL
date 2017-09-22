@@ -5,7 +5,6 @@ import _config_constants_ as cons
 # look nice)
 
 LABEL_RATIO = 0.5
-TEST_LIMIT = 13000
 
 FEATURE_SET_CODE = 15
 # FEATURE_SET is combination of set of features like lexicon, writing style and ngrams
@@ -13,6 +12,7 @@ FEATURE_SET_CODE = 15
 # out of these code 15 performs better which include all features.
 # To customize you can edit map_tweet(tweet,is_self_training) in _load_model_test_iterate_.py
 
+TEST_LIMIT = cons.TEST_DATA_SIZE
 
 DEFAULT_CLASSIFIER = cons.CLASSIFIER_SVM
 
