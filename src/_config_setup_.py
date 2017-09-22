@@ -4,7 +4,7 @@ import _config_constants_ as cons
 # Parameters related to training model (some constants are important to
 # look nice)
 
-LABEL_RATIO = 0.1
+LABEL_RATIO = 0.5
 TEST_LIMIT = 13000
 
 FEATURE_SET_CODE = 15

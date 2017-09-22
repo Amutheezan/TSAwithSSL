@@ -15,7 +15,7 @@ def load_generic_dictionary(file_name):
 def load_word_dictionary(filename):
     f = open(filename, 'r')
     line = f.readline()
-    lines = line.split(",");
+    lines = line.split(",")
     f.close()
     return lines
 

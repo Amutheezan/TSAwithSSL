@@ -93,7 +93,6 @@ def map_tweet(tweet, is_self_training):
     preprocessed_tweet = ppros.pre_process_tweet(tweet)
     postag_tweet = postag.pos_tag_string(preprocessed_tweet)
 
-
     if not is_self_training:
         uni_gram_score = ngram.score(preprocessed_tweet, ds.POS_UNI_GRAM, ds.NEG_UNI_GRAM, ds.NEU_UNI_GRAM, 1)
         post_uni_gram_score = ngram.score(postag_tweet, ds.POS_POST_UNI_GRAM, ds.NEG_POST_UNI_GRAM, ds.NEU_POST_UNI_GRAM, 1)
@@ -261,55 +260,58 @@ def generate_model(is_self_training=False):
     return
 
 
-def predict(tweet, is_self_training):
+def transform_tweet(tweet, is_self_training):
     z = map_tweet(tweet, is_self_training)
     z_scaled = ds.SCALAR.transform(z)
     z = ds.NORMALIZER.transform([z_scaled])
     z = z[0].tolist()
-    na = ds.MODEL.predict_proba([z]).tolist()[0]
-    max_probability = max(na)
-    if max_probability > 1.0 / 3:
-        if max_probability < 0.5:
-            na = ds.MODEL.predict_proba([z]).tolist()[0]
-            return na, True
+    return z
+
+
+def predict(tweet, is_self_training):
+    z = transform_tweet(tweet,is_self_training)
+    predict_proba = ds.MODEL.predict_proba([z]).tolist()[ 0 ]
+    max_probability = max(predict_proba)
+    if max_probability > cons.PERCENTAGE_UNIFORM:
+        if max_probability < cons.PERCENTAGE_MINIMUM_CONF:
+            predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
+            return predict_proba, True
         else:
-            if na[0] == max_probability:
+            if predict_proba[0] == max_probability:
                 return cons.LABEL_NEGATIVE, True
-            if na[1] == max_probability:
+            if predict_proba[1] == max_probability:
                 return cons.LABEL_NEUTRAL, True
-            if na[2] == max_probability:
+            if predict_proba[2] == max_probability:
                 return cons.LABEL_POSITIVE, True
     else:
-        na = ds.MODEL.predict_proba([z]).tolist()[0]
-        return na, True
+        predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
+        return predict_proba, True
 
 
 def predict_for_self_training(tweet,last_label, is_self_training):
-    z = map_tweet(tweet, is_self_training)
-    z_scaled = ds.SCALAR.transform(z)
-    z = ds.NORMALIZER.transform([z_scaled])
-    z = z[0].tolist()
-    na = ds.MODEL.predict_proba([z]).tolist()[0]
+    z = transform_tweet(tweet , is_self_training)
+    predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
 
     max_proba = 0.0
     next_max_proba = 0.0
 
-    for i in range(len(na)):
-        if na[i] > max_proba:
+    for i in range(len(predict_proba)):
+        if predict_proba[i] > max_proba:
             next_max_proba = max_proba
-            max_proba = na[i]
+            max_proba = predict_proba[i]
 
-    if max_proba < 0.5 or (max_proba - next_max_proba) < 0.1:
+    if max_proba < cons.PERCENTAGE_MINIMUM_CONF or\
+                    (max_proba - next_max_proba) < cons.PERCENTAGE_MINIMUM_DIFF:
         if last_label is cons.UNLABELED:
             return cons.UNLABELED
         else:
             return last_label
     else:
-        if na[0] == max_proba:
+        if predict_proba[0] == max_proba:
             return cons.LABEL_NEGATIVE
-        if na[1] == max_proba:
+        if predict_proba[1] == max_proba:
             return cons.LABEL_NEUTRAL
-        if na[2] == max_proba:
+        if predict_proba[2] == max_proba:
             return cons.LABEL_POSITIVE
 
 
@@ -373,7 +375,7 @@ def get_result(test_dict):
     pre_neu = commons.get_divided_value(TNeu, (FNeu_P + FNeu_N + TNeu))
     re_p = commons.get_divided_value(TP, (FN_P + FNeu_P + TP))
     re_n = commons.get_divided_value(TN, (FP_N + FNeu_N + TN))
-    re_neu = commons.get_divided_value(TNeu, (FNeu_P + FNeu_N + TNeu))
+    re_neu = commons.get_divided_value(TNeu, (FP_Neu + FN_Neu + TNeu))
     f_score_p = 2 * commons.get_divided_value((re_p * pre_p), (re_p + pre_p))
     f_score_n = 2 * commons.get_divided_value((re_n * pre_n), (re_n + pre_n))
     f_score = round((f_score_p + f_score_n) / 2, 4)
