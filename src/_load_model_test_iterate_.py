@@ -437,6 +437,7 @@ def self_training_run(is_self_training):
     result = get_result(ds.TEST_DICT)
     if result[len(result)-1] < ds.CURRENT_F_SCORE:
         ds.STABILITY_BREAK -= 1
+        ds.CURRENT_F_SCORE = result[len(result)-1]
     else:
         ds.CURRENT_F_SCORE = result[len(result)-1]
     size = get_size(True)
