@@ -2,28 +2,26 @@ import csv
 import time
 
 import _config_constants_ as cons
-import _config_controller_ as controller
 import _generic_commons_ as commons
 import _load_model_test_iterate_ as lmti
 
 
 def self_training():
-    final_file = open('../dataset/analysed/' + lmti.get_file_prefix() + str(time.time()) + 'result.csv', 'w+')
+    final_file = open('../dataset/analysed/' + lmti.get_file_prefix() + str(time.time()) + 'result.csv' , 'w+')
     csv_result = csv.writer(final_file)
     csv_result.writerow(cons.CSV_HEADER)
 
-    time_list = [time.time()]
+    time_list = [ time.time() ]
 
     result = lmti.initial_run()
     print result
     csv_result.writerow(result)
 
-    while lmti.ds.CURRENT_ITERATION < controller.NO_OF_ITERATION:
+    while lmti.ds.STABILITY_BREAK > 0:
         if lmti.ds.CURRENT_ITERATION == 0:
             is_self_training = False
         else:
             is_self_training = True
-
         result = lmti.self_training_run(is_self_training)
         print result
         csv_result.writerow(result)

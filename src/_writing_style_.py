@@ -44,7 +44,7 @@ def surround_by_signs(tweet):
     if len(tweet) != 0:
         for c in tweet:
             if c[0] == c[len(c) - 1] and c[0] in highlight:
-                count = count + 1;
+                count = count + 1
     return count
 
 
