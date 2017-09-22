@@ -2,7 +2,7 @@ import csv
 import warnings
 
 import numpy as np
-from sklearn import preprocessing as pr , svm
+from sklearn import preprocessing as pr, svm
 
 import _config_constants_ as cons
 import _config_controller_ as controller
@@ -19,11 +19,11 @@ warnings.filterwarnings('ignore')
 
 
 def get_file_prefix():
-    return "{0}_{1}_{2}_{3}_". \
+    return "{0}_{1}_{2}_{3}_".\
         format(
-        str(controller.LABEL_LIMIT) , str(controller.FEATURE_SET_CODE) ,
-        str(controller.TEST_LIMIT) , str(controller.DEFAULT_CLASSIFIER)
-    )
+            str(controller.LABEL_LIMIT), str(controller.FEATURE_SET_CODE),
+            str(controller.TEST_LIMIT), str(controller.DEFAULT_CLASSIFIER)
+        )
 
 
 def load_initial_dictionaries():
@@ -31,12 +31,12 @@ def load_initial_dictionaries():
     This used to classify initial data set as positive,negative and neutral
     :return: It return the success or failure
     """
-    print controller.POS_COUNT_LIMIT , controller.NEG_COUNT_LIMIT , controller.NEU_COUNT_LIMIT
+    print controller.POS_COUNT_LIMIT, controller.NEG_COUNT_LIMIT, controller.NEU_COUNT_LIMIT
     pos_dict = {}
     neg_dict = {}
     neu_dict = {}
     un_label_dict = {}
-    with open("../dataset/semeval.csv" , 'r') as main_dataset:
+    with open("../dataset/semeval.csv", 'r') as main_dataset:
         main = csv.reader(main_dataset)
         pos_count = 1
         neg_count = 1
@@ -45,17 +45,29 @@ def load_initial_dictionaries():
         count = 1
         for line in main:
             if count % 3 == 0:
-                if line[ 1 ] == "positive" and pos_count <= controller.POS_COUNT_LIMIT:
-                    pos_dict.update({str(pos_count): str(line[ 2 ])})
+                if line[1] == "positive" and pos_count <= controller.POS_COUNT_LIMIT:
+                    pos_dict.update({str(pos_count): str(line[2])})
                     pos_count += 1
-                if line[ 1 ] == "negative" and neg_count <= controller.NEG_COUNT_LIMIT:
-                    neg_dict.update({str(neg_count): str(line[ 2 ])})
+                elif line[1] == "positive" and pos_count > controller.POS_COUNT_LIMIT:
+                    un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
+                    un_label_count += 1
+
+                if line[1] == "negative" and neg_count <= controller.NEG_COUNT_LIMIT:
+                    neg_dict.update({str(neg_count): str(line[2])})
                     neg_count += 1
-                if line[ 1 ] == "neutral" and neu_count <= controller.NEU_COUNT_LIMIT:
-                    neu_dict.update({str(neu_count): str(line[ 2 ])})
+                elif line[1] == "negative" and neg_count > controller.NEG_COUNT_LIMIT:
+                    un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
+                    un_label_count += 1
+
+                if line[1] == "neutral" and neu_count <= controller.NEU_COUNT_LIMIT:
+                    neu_dict.update({str(neu_count): str(line[2])})
                     neu_count += 1
+                elif line[1] == "neutral" and neu_count > controller.NEU_COUNT_LIMIT:
+                    un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED ]})
+                    un_label_count += 1
+
             if count % 3 == 1:
-                un_label_dict.update({str(un_label_count): [ str(line[ 2 ]) , cons.UNLABELED ]})
+                un_label_dict.update({str(un_label_count): [str(line[2]), cons.UNLABELED]})
                 un_label_count += 1
             count += 1
 
@@ -66,7 +78,7 @@ def load_initial_dictionaries():
     return
 
 
-def map_tweet(tweet , is_self_training):
+def map_tweet(tweet, is_self_training):
     """
     This function use to map the tweet
     :param tweet:
@@ -76,20 +88,18 @@ def map_tweet(tweet , is_self_training):
 
     feature_set_code = controller.FEATURE_SET_CODE
 
-    vector = [ ]
+    vector = []
 
     preprocessed_tweet = ppros.pre_process_tweet(tweet)
     postag_tweet = postag.pos_tag_string(preprocessed_tweet)
 
+
     if not is_self_training:
-        uni_gram_score = ngram.score(preprocessed_tweet , ds.POS_UNI_GRAM , ds.NEG_UNI_GRAM , ds.NEU_UNI_GRAM , 1)
-        post_uni_gram_score = ngram.score(postag_tweet , ds.POS_POST_UNI_GRAM , ds.NEG_POST_UNI_GRAM ,
-                                          ds.NEU_POST_UNI_GRAM , 1)
+        uni_gram_score = ngram.score(preprocessed_tweet, ds.POS_UNI_GRAM, ds.NEG_UNI_GRAM, ds.NEU_UNI_GRAM, 1)
+        post_uni_gram_score = ngram.score(postag_tweet, ds.POS_POST_UNI_GRAM, ds.NEG_POST_UNI_GRAM, ds.NEU_POST_UNI_GRAM, 1)
     else:
-        uni_gram_score = ngram.score(preprocessed_tweet , ds.POS_UNI_GRAM_SELF , ds.NEG_UNI_GRAM_SELF ,
-                                     ds.NEU_UNI_GRAM_SELF , 1)
-        post_uni_gram_score = ngram.score(postag_tweet , ds.POS_POST_UNI_GRAM_SELF , ds.NEG_POST_UNI_GRAM_SELF ,
-                                          ds.NEU_POST_UNI_GRAM_SELF , 1)
+        uni_gram_score = ngram.score(preprocessed_tweet, ds.POS_UNI_GRAM_SELF, ds.NEG_UNI_GRAM_SELF,ds.NEU_UNI_GRAM_SELF, 1)
+        post_uni_gram_score = ngram.score(postag_tweet, ds.POS_POST_UNI_GRAM_SELF, ds.NEG_POST_UNI_GRAM_SELF,ds.NEU_POST_UNI_GRAM_SELF, 1)
 
     lexicon_score_gen = lexicon_score.get_lexicon_score(preprocessed_tweet)
     afinn_score_96 = lexicon_score.get_afinn_99_score(preprocessed_tweet)
@@ -127,7 +137,7 @@ def map_tweet(tweet , is_self_training):
     return vector
 
 
-def load_matrix_sub(process_dict , label=cons.LABEL_NEUTRAL , is_self_training=False):
+def load_matrix_sub(process_dict, label=cons.LABEL_NEUTRAL, is_self_training=False):
     """
     :param process_dict:
     :param label:
@@ -138,29 +148,29 @@ def load_matrix_sub(process_dict , label=cons.LABEL_NEUTRAL , is_self_training=F
     if limit_t != 0:
         keys = process_dict.keys()
         if len(keys) > 0:
-            vectors = [ ]
-            labels = [ ]
+            vectors = []
+            labels = []
             for key in keys:
                 line = process_dict.get(key)
-                z = map_tweet(line , is_self_training)
+                z = map_tweet(line, is_self_training)
                 vectors.append(z)
                 labels.append(float(label))
         else:
-            vectors = [ ]
-            labels = [ ]
+            vectors = []
+            labels = []
     else:
-        vectors = [ ]
-        labels = [ ]
-    return vectors , labels
+        vectors = []
+        labels = []
+    return vectors, labels
 
 
 def get_vectors_and_labels():
-    ds.POS_UNI_GRAM , ds.POS_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.POS_DICT , gram=1)
-    ds.NEG_UNI_GRAM , ds.NEG_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.NEG_DICT , gram=1)
-    ds.NEU_UNI_GRAM , ds.NEU_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.NEU_DICT , gram=1)
-    pos_vec , pos_lab = load_matrix_sub(process_dict=ds.POS_DICT , label=cons.LABEL_POSITIVE , is_self_training=False)
-    neg_vec , neg_lab = load_matrix_sub(process_dict=ds.NEG_DICT , label=cons.LABEL_NEGATIVE , is_self_training=False)
-    neu_vec , neu_lab = load_matrix_sub(process_dict=ds.NEU_DICT , label=cons.LABEL_NEUTRAL , is_self_training=False)
+    ds.POS_UNI_GRAM, ds.POS_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.POS_DICT, gram=1)
+    ds.NEG_UNI_GRAM, ds.NEG_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.NEG_DICT, gram=1)
+    ds.NEU_UNI_GRAM, ds.NEU_POST_UNI_GRAM = ngram.generate_n_gram_dict(file_dict=ds.NEU_DICT, gram=1)
+    pos_vec, pos_lab = load_matrix_sub(process_dict=ds.POS_DICT, label=cons.LABEL_POSITIVE, is_self_training=False)
+    neg_vec, neg_lab = load_matrix_sub(process_dict=ds.NEG_DICT, label=cons.LABEL_NEGATIVE, is_self_training=False)
+    neu_vec, neu_lab = load_matrix_sub(process_dict=ds.NEU_DICT, label=cons.LABEL_NEUTRAL, is_self_training=False)
     ds.VECTORS = pos_vec + neg_vec + neu_vec
     ds.LABELS = pos_lab + neg_lab + neu_lab
     is_success = True
@@ -172,15 +182,15 @@ def get_vectors_and_labels_self():
     obtain the vectors and labels for total self training and storing it at main store
     :return:
     """
-    pos_t , pos_post_t = ngram.generate_n_gram_dict(ds.POS_DICT_SELF , 1)
-    neg_t , neg_post_t = ngram.generate_n_gram_dict(ds.NEG_DICT_SELF , 1)
-    neu_t , neu_post_t = ngram.generate_n_gram_dict(ds.NEU_DICT_SELF , 1)
-    ds.POS_UNI_GRAM_SELF , is_success = commons.dict_update(ds.POS_UNI_GRAM , pos_t)
-    ds.NEG_UNI_GRAM_SELF , is_success = commons.dict_update(ds.NEG_UNI_GRAM , neg_t)
-    ds.NEU_UNI_GRAM_SELF , is_success = commons.dict_update(ds.NEU_UNI_GRAM , neu_t)
-    ds.POS_POST_UNI_GRAM_SELF , is_success = commons.dict_update(ds.POS_POST_UNI_GRAM , pos_post_t)
-    ds.NEG_POST_UNI_GRAM_SELF , is_success = commons.dict_update(ds.NEG_POST_UNI_GRAM , neg_post_t)
-    ds.NEU_POST_UNI_GRAM_SELF , is_success = commons.dict_update(ds.NEU_POST_UNI_GRAM , neu_post_t)
+    pos_t, pos_post_t = ngram.generate_n_gram_dict(ds.POS_DICT_SELF, 1)
+    neg_t, neg_post_t = ngram.generate_n_gram_dict(ds.NEG_DICT_SELF, 1)
+    neu_t, neu_post_t = ngram.generate_n_gram_dict(ds.NEU_DICT_SELF, 1)
+    ds.POS_UNI_GRAM_SELF, is_success = commons.dict_update(ds.POS_UNI_GRAM, pos_t)
+    ds.NEG_UNI_GRAM_SELF, is_success = commons.dict_update(ds.NEG_UNI_GRAM, neg_t)
+    ds.NEU_UNI_GRAM_SELF, is_success = commons.dict_update(ds.NEU_UNI_GRAM, neu_t)
+    ds.POS_POST_UNI_GRAM_SELF, is_success = commons.dict_update(ds.POS_POST_UNI_GRAM, pos_post_t)
+    ds.NEG_POST_UNI_GRAM_SELF, is_success = commons.dict_update(ds.NEG_POST_UNI_GRAM, neg_post_t)
+    ds.NEU_POST_UNI_GRAM_SELF, is_success = commons.dict_update(ds.NEU_POST_UNI_GRAM, neu_post_t)
     temp_pos_dict = ds.POS_DICT.copy()
     temp_neg_dict = ds.NEG_DICT.copy()
     temp_neu_dict = ds.NEU_DICT.copy()
@@ -196,20 +206,20 @@ def get_vectors_and_labels_self():
     temp_pos_dict_final.update(temp_pos_dict_self)
     temp_neg_dict_final.update(temp_neg_dict_self)
     temp_neu_dict_final.update(temp_neu_dict_self)
-    pos_vec , pos_lab = load_matrix_sub(temp_pos_dict_final , cons.LABEL_POSITIVE , True)
-    neg_vec , neg_lab = load_matrix_sub(temp_neg_dict_final , cons.LABEL_NEGATIVE , True)
-    neu_vec , neu_lab = load_matrix_sub(temp_neu_dict_final , cons.LABEL_NEUTRAL , True)
+    pos_vec, pos_lab = load_matrix_sub(temp_pos_dict_final, cons.LABEL_POSITIVE, True)
+    neg_vec, neg_lab = load_matrix_sub(temp_neg_dict_final, cons.LABEL_NEGATIVE, True)
+    neu_vec, neu_lab = load_matrix_sub(temp_neu_dict_final, cons.LABEL_NEUTRAL, True)
     ds.VECTORS_SELF = pos_vec + neg_vec + neu_vec
     ds.LABELS_SELF = pos_lab + neg_lab + neu_lab
     return is_success
 
 
 def get_modified_class_weight(sizes):
-    pos , neg , neu , test = sizes
+    pos, neg, neu, test = sizes
     weights = dict()
-    weights[ cons.LABEL_POSITIVE ] = (1.0 * neu) / neg
-    weights[ cons.LABEL_NEGATIVE ] = (1.0 * neu) / pos
-    weights[ cons.LABEL_NEUTRAL ] = 1.0
+    weights[cons.LABEL_POSITIVE] = (1.0 * neu) / neg
+    weights[cons.LABEL_NEGATIVE] = (1.0 * neu) / pos
+    weights[cons.LABEL_NEUTRAL] = 1.0
     return weights
 
 
@@ -228,7 +238,7 @@ def generate_model(is_self_training=False):
     classifier_type = controller.DEFAULT_CLASSIFIER
     vectors_scaled = pr.scale(np.array(vectors))
     scaler = pr.StandardScaler().fit(vectors)
-    vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
+    vectors_normalized = pr.normalize(vectors_scaled, norm='l2')
     normalizer = pr.Normalizer().fit(vectors_scaled)
     vectors = vectors_normalized
     vectors = vectors.tolist()
@@ -240,9 +250,9 @@ def generate_model(is_self_training=False):
             class_weights = get_modified_class_weight(get_size(True))
         else:
             class_weights = controller.DEFAULT_CLASS_WEIGHTS
-        model = svm.SVC(kernel=kernel_function , C=c_parameter ,
-                        class_weight=class_weights , gamma=gamma , probability=True)
-        model.fit(vectors , labels)
+        model = svm.SVC(kernel=kernel_function, C=c_parameter,
+                        class_weight=class_weights, gamma=gamma, probability=True)
+        model.fit(vectors, labels)
     else:
         model = None
     ds.SCALAR = scaler
@@ -251,43 +261,43 @@ def generate_model(is_self_training=False):
     return
 
 
-def predict(tweet , is_self_training):
-    z = map_tweet(tweet , is_self_training)
+def predict(tweet, is_self_training):
+    z = map_tweet(tweet, is_self_training)
     z_scaled = ds.SCALAR.transform(z)
-    z = ds.NORMALIZER.transform([ z_scaled ])
-    z = z[ 0 ].tolist()
-    na = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
+    z = ds.NORMALIZER.transform([z_scaled])
+    z = z[0].tolist()
+    na = ds.MODEL.predict_proba([z]).tolist()[0]
     max_probability = max(na)
     if max_probability > 1.0 / 3:
         if max_probability < 0.5:
-            na = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
-            return na , True
+            na = ds.MODEL.predict_proba([z]).tolist()[0]
+            return na, True
         else:
-            if na[ 0 ] == max_probability:
-                return cons.LABEL_NEGATIVE , True
-            if na[ 1 ] == max_probability:
-                return cons.LABEL_NEUTRAL , True
-            if na[ 2 ] == max_probability:
-                return cons.LABEL_POSITIVE , True
+            if na[0] == max_probability:
+                return cons.LABEL_NEGATIVE, True
+            if na[1] == max_probability:
+                return cons.LABEL_NEUTRAL, True
+            if na[2] == max_probability:
+                return cons.LABEL_POSITIVE, True
     else:
-        na = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
-        return na , True
+        na = ds.MODEL.predict_proba([z]).tolist()[0]
+        return na, True
 
 
-def predict_for_self_training(tweet , last_label , is_self_training):
-    z = map_tweet(tweet , is_self_training)
+def predict_for_self_training(tweet,last_label, is_self_training):
+    z = map_tweet(tweet, is_self_training)
     z_scaled = ds.SCALAR.transform(z)
-    z = ds.NORMALIZER.transform([ z_scaled ])
-    z = z[ 0 ].tolist()
-    na = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
+    z = ds.NORMALIZER.transform([z_scaled])
+    z = z[0].tolist()
+    na = ds.MODEL.predict_proba([z]).tolist()[0]
 
     max_proba = 0.0
     next_max_proba = 0.0
 
     for i in range(len(na)):
-        if na[ i ] > max_proba:
+        if na[i] > max_proba:
             next_max_proba = max_proba
-            max_proba = na[ i ]
+            max_proba = na[i]
 
     if max_proba < 0.5 or (max_proba - next_max_proba) < 0.1:
         if last_label is cons.UNLABELED:
@@ -295,26 +305,26 @@ def predict_for_self_training(tweet , last_label , is_self_training):
         else:
             return last_label
     else:
-        if na[ 0 ] == max_proba:
+        if na[0] == max_proba:
             return cons.LABEL_NEGATIVE
-        if na[ 1 ] == max_proba:
+        if na[1] == max_proba:
             return cons.LABEL_NEUTRAL
-        if na[ 2 ] == max_proba:
+        if na[2] == max_proba:
             return cons.LABEL_POSITIVE
 
 
 def store_test(is_self_training):
     test_dict = {}
     limit = controller.TEST_LIMIT
-    with open('../dataset/test.csv' , "r") as testFile:
+    with open('../dataset/test.csv', "r") as testFile:
         reader = csv.reader(testFile)
         count = 0
         for line in reader:
             line = list(line)
-            tweet = line[ 2 ]
-            s = line[ 1 ]
-            nl , is_success = predict(tweet , is_self_training)
-            test_dict.update({str(count): [ s , tweet , nl ]})
+            tweet = line[2]
+            s = line[1]
+            nl, is_success = predict(tweet, is_self_training)
+            test_dict.update({str(count): [s, tweet, nl]})
             count = count + 1
             if count >= limit:
                 break
@@ -329,11 +339,11 @@ def get_result(test_dict):
     """
     TP = TN = TNeu = FP_N = FP_Neu = FN_P = FN_Neu = FNeu_P = FNeu_N = 0
     if len(test_dict) > 0:
-        dic = {'positive': cons.LABEL_POSITIVE , 'negative': cons.LABEL_NEGATIVE , 'neutral': cons.LABEL_NEUTRAL}
+        dic = {'positive': cons.LABEL_POSITIVE, 'negative': cons.LABEL_NEGATIVE, 'neutral': cons.LABEL_NEUTRAL}
         for key in test_dict.keys():
             line = test_dict.get(key)
-            new = str(line[ 2 ])
-            old = str(dic.get(line[ 0 ]))
+            new = str(line[2])
+            old = str(dic.get(line[0]))
             if old == new:
                 if new == str(cons.LABEL_POSITIVE):
                     TP += 1
@@ -356,20 +366,20 @@ def get_result(test_dict):
                     FNeu_N += 1
     else:
         print "No test data"
-    accuracy = commons.get_divided_value((TP + TN + TNeu) ,
+    accuracy = commons.get_divided_value((TP + TN + TNeu),
                                          (TP + TN + TNeu + FP_N + FP_Neu + FN_P + FN_Neu + FNeu_P + FNeu_N))
-    pre_p = commons.get_divided_value(TP , (FP_N + FP_Neu + TP))
-    pre_n = commons.get_divided_value(TN , (FN_P + FN_Neu + TN))
-    pre_neu = commons.get_divided_value(TNeu , (FNeu_P + FNeu_N + TNeu))
-    re_p = commons.get_divided_value(TP , (FN_P + FNeu_P + TP))
-    re_n = commons.get_divided_value(TN , (FP_N + FNeu_N + TN))
-    re_neu = commons.get_divided_value(TNeu , (FNeu_P + FNeu_N + TNeu))
-    f_score_p = 2 * commons.get_divided_value((re_p * pre_p) , (re_p + pre_p))
-    f_score_n = 2 * commons.get_divided_value((re_n * pre_n) , (re_n + pre_n))
-    f_score = round((f_score_p + f_score_n) / 2 , 4)
+    pre_p = commons.get_divided_value(TP, (FP_N + FP_Neu + TP))
+    pre_n = commons.get_divided_value(TN, (FN_P + FN_Neu + TN))
+    pre_neu = commons.get_divided_value(TNeu, (FNeu_P + FNeu_N + TNeu))
+    re_p = commons.get_divided_value(TP, (FN_P + FNeu_P + TP))
+    re_n = commons.get_divided_value(TN, (FP_N + FNeu_N + TN))
+    re_neu = commons.get_divided_value(TNeu, (FNeu_P + FNeu_N + TNeu))
+    f_score_p = 2 * commons.get_divided_value((re_p * pre_p), (re_p + pre_p))
+    f_score_n = 2 * commons.get_divided_value((re_n * pre_n), (re_n + pre_n))
+    f_score = round((f_score_p + f_score_n) / 2, 4)
 
-    return accuracy , pre_p , pre_n , pre_neu , re_p , re_n , re_neu , \
-           f_score_p , f_score_n , f_score
+    return accuracy, pre_p, pre_n, pre_neu, re_p, re_n, re_neu, \
+           f_score_p, f_score_n, f_score
 
 
 def load_iteration_dict(is_self_training):
@@ -385,15 +395,15 @@ def load_iteration_dict(is_self_training):
         temp_neu_dict = {}
 
         for key in ds.UNLABELED_DICT.keys():
-            tweet , last_label = ds.UNLABELED_DICT.get(key)
-            nl = predict_for_self_training(tweet , last_label , is_self_training)
+            tweet, last_label = ds.UNLABELED_DICT.get(key)
+            nl = predict_for_self_training(tweet, last_label, is_self_training)
             if nl == cons.LABEL_POSITIVE:
-                temp_pos_dict[ key ] = tweet
+                temp_pos_dict[key] = tweet
             if nl == cons.LABEL_NEGATIVE:
-                temp_neg_dict[ key ] = tweet
+                temp_neg_dict[key] = tweet
             if nl == cons.LABEL_NEUTRAL:
-                temp_neu_dict[ key ] = tweet
-            ds.UNLABELED_DICT.update({key: [ tweet , nl ]})
+                temp_neu_dict[key] = tweet
+            ds.UNLABELED_DICT.update({key: [tweet, nl]})
     else:
         temp_pos_dict = {}
         temp_neg_dict = {}
@@ -412,7 +422,7 @@ def initial_run():
     generate_model(False)
     store_test(False)
     result = get_result(ds.TEST_DICT)
-    ds.CURRENT_F_SCORE = result[ len(result) - 1 ]
+    ds.CURRENT_F_SCORE = result[len(result)-1]
     size = get_size(False)
     feature_set_code = controller.FEATURE_SET_CODE
     combined_result = size + (feature_set_code , 0) + result
@@ -425,15 +435,15 @@ def self_training_run(is_self_training):
     generate_model(True)
     store_test(True)
     result = get_result(ds.TEST_DICT)
-    if result[ len(result) - 1 ] < ds.CURRENT_F_SCORE:
+    if result[len(result)-1] < ds.CURRENT_F_SCORE:
         ds.STABILITY_BREAK -= 1
     else:
-        ds.CURRENT_F_SCORE = result[ len(result) - 1 ]
+        ds.CURRENT_F_SCORE = result[len(result)-1]
     size = get_size(True)
     feature_set_code = controller.FEATURE_SET_CODE
     ds.CURRENT_ITERATION += 1
     current_iteration = ds.CURRENT_ITERATION
-    combined_result = size + (feature_set_code , current_iteration) + result
+    combined_result = size + (feature_set_code, current_iteration) + result
     return combined_result
 
 
@@ -448,4 +458,4 @@ def get_size(is_self_training):
         neg_size = len(ds.NEG_DICT)
         neu_size = len(ds.NEU_DICT)
         test_size = len(ds.TEST_DICT)
-    return pos_size , neg_size , neu_size , test_size
+    return pos_size, neg_size, neu_size, test_size
