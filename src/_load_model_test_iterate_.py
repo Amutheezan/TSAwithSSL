@@ -489,15 +489,15 @@ def initial_run():
     result = get_result(ds.TEST_DICT)
     ds.CURRENT_F_SCORE = result[ len(result) - 1 ]
     size = get_size(False)
-    combined_result = size + (0 ,) + result
+    combined_result = size + (0,) + result
     return combined_result
 
 
 def co_training_run(is_co_training):
     load_iteration_dict(is_co_training)
     get_vectors_and_labels_self()
-    generate_model(0 , True)
-    generate_model(1 , True)
+    generate_model(0, True)
+    generate_model(1, True)
     store_test(True)
     result = get_result(ds.TEST_DICT)
     if result[ len(result) - 1 ] < ds.CURRENT_F_SCORE:
@@ -508,7 +508,7 @@ def co_training_run(is_co_training):
     size = get_size(True)
     ds.CURRENT_ITERATION += 1
     current_iteration = ds.CURRENT_ITERATION
-    combined_result = size + current_iteration + result
+    combined_result = size + (current_iteration,) + result
     return combined_result
 
 
