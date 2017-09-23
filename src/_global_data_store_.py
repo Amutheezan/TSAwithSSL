@@ -13,11 +13,16 @@ TEST_DICT = {}
 # for SVM classifier
 
 VECTORS = []
+VECTORS_1 = []
 LABELS = []
 
 MODEL = None
 SCALAR = None
 NORMALIZER = None
+
+MODEL_1 = None
+SCALAR_1 = None
+NORMALIZER_1 = None
 
 # These are for temporary storing things for SELF TRAINING
 # 1. These are for storing LABEL train data in every iteration
@@ -31,6 +36,7 @@ NEU_DICT_SELF = {}
 # self_training
 
 VECTORS_SELF = []
+VECTORS_SELF_1 = []
 LABELS_SELF = []
 
 # These are uni gram storing dictionaries for self training and normal

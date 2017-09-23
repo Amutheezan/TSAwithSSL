@@ -6,12 +6,6 @@ import _config_constants_ as cons
 
 LABEL_RATIO = 0.5
 
-FEATURE_SET_CODE = 15
-# FEATURE_SET is combination of set of features like lexicon, writing style and ngrams
-# (also emoticons) according I have defined a set of feature set code and get combinations
-# out of these code 15 performs better which include all features.
-# To customize you can edit map_tweet(tweet,is_self_training) in _load_model_test_iterate_.py
-
 TEST_LIMIT = cons.TEST_DATA_SIZE
 
 DEFAULT_CLASSIFIER = cons.CLASSIFIER_SVM

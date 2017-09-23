@@ -25,7 +25,6 @@ ENTROPY_MAXIMUM_CONF = 0.5
 
 
 # HEADER OF THE SAVING FILE
-
 CSV_HEADER = ["pos", "neg", "neu", "test", "code", "Iteration", "Accuracy",
               "Pre - Pos", "Pre - Neg", "Pre - Neu", "Re - Pos", "Re - Neg", "Re - Neu",
               "f - Pos", "f - Neg", "f - Avg"]
