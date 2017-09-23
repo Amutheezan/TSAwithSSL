@@ -296,16 +296,16 @@ def generate_model(feature_set , is_co_training=False):
                         class_weight=class_weights , gamma=gamma , probability=True)
         model.fit(vectors , labels)
     elif classifier_type == cons.CLASSIFIER_XGBOOST:
-        learning_rate = globals.DEFAULT_LEARNING_RATE
-        max_depth = globals.DEFAULT_MAX_DEPTH
-        min_child_weight = globals.DEFAULT_MIN_CHILD_WEIGHT
-        silent = globals.DEFAULT_SILENT
-        objective = globals.DEFAULT_OBJECTIVE
-        subsample = globals.DEFAULT_SUB_SAMPLE
-        gamma = globals.DEFAULT_GAMMA_XBOOST
-        reg_alpha = globals.DEFAULT_REGRESSION_ALPHA
-        n_estimators = globals.DEFAULT_N_ESTIMATORS
-        colsample_bytree = globals.DEFAULT_COLSAMPLE_BYTREE
+        learning_rate = controller.DEFAULT_LEARNING_RATE
+        max_depth = controller.DEFAULT_MAX_DEPTH
+        min_child_weight = controller.DEFAULT_MIN_CHILD_WEIGHT
+        silent = controller.DEFAULT_SILENT
+        objective = controller.DEFAULT_OBJECTIVE
+        subsample = controller.DEFAULT_SUB_SAMPLE
+        gamma = controller.DEFAULT_GAMMA_XBOOST
+        reg_alpha = controller.DEFAULT_REGRESSION_ALPHA
+        n_estimators = controller.DEFAULT_N_ESTIMATORS
+        colsample_bytree = controller.DEFAULT_COLSAMPLE_BYTREE
         model = XGBClassifier(learning_rate=learning_rate , max_depth=max_depth ,
                               min_child_weight=min_child_weight , silent=silent ,
                               objective=objective , subsample=subsample , gamma=gamma ,
