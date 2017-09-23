@@ -20,10 +20,9 @@ warnings.filterwarnings('ignore')
 
 
 def get_file_prefix():
-    return "{0}_{1}_{2}_". \
+    return "{0}_{1}_". \
         format(
-        str(controller.LABEL_LIMIT) ,
-        str(controller.TEST_LIMIT) , str(controller.DEFAULT_CLASSIFIER)
+        str(controller.LABEL_LIMIT) , str(controller.TEST_LIMIT)
     )
 
 

@@ -13,7 +13,6 @@ TEST_DICT = {}
 # for SVM classifier
 
 VECTORS = []
-VECTORS_1 = []
 LABELS = []
 
 MODEL = None
@@ -36,7 +35,6 @@ NEU_DICT_SELF = {}
 # self_training
 
 VECTORS_SELF = []
-VECTORS_SELF_1 = []
 LABELS_SELF = []
 
 # These are uni gram storing dictionaries for self training and normal
