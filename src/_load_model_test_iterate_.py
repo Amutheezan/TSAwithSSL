@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 from sklearn import preprocessing as pr , svm
+from xgboost import XGBClassifier
 
 import _config_constants_ as cons
 import _config_controller_ as controller
@@ -14,7 +15,6 @@ import _generic_commons_ as commons
 import _global_data_store_ as ds
 import _pre_process_ as ppros
 import _writing_style_ as ws
-from xgboost import  XGBClassifier
 
 warnings.filterwarnings('ignore')
 
@@ -102,7 +102,7 @@ def load_initial_dictionaries():
     return
 
 
-def map_tweet(tweet , feature_set , is_co_training):
+def map_tweet(tweet , is_co_training):
     """
     This function use to map the tweet
     :param tweet:
@@ -138,23 +138,18 @@ def map_tweet(tweet , feature_set , is_co_training):
 
     writing_style = ws.writing_style_vector(tweet)
 
-    # These classification are just for ease of division in general practice
-    # Generally we use default feature code 15 which takes all the feature
-    # You can evaluate that by analysing below code blocks :)
-    if feature_set:
-        vector.append(afinn_score_96)
-        vector.append(afinn_score_111)
-        vector.append(lexicon_score_gen)
-        vector.append(senti_140_score)
-        vector.extend(n_r_c_score)
-        vector.append(binliu_score)
-        vector.append(sentiword_score)
-    else:
-        vector.extend(writing_style)
-        vector.append(emoticon_score)
-        vector.append(unicode_emoticon_score)
-        vector.extend(post_uni_gram_score)
-        vector.extend(uni_gram_score)
+    vector.append(afinn_score_96)
+    vector.append(afinn_score_111)
+    vector.append(lexicon_score_gen)
+    vector.append(senti_140_score)
+    vector.extend(n_r_c_score)
+    vector.append(binliu_score)
+    vector.append(sentiword_score)
+    vector.extend(writing_style)
+    vector.append(emoticon_score)
+    vector.append(unicode_emoticon_score)
+    vector.extend(post_uni_gram_score)
+    vector.extend(uni_gram_score)
     return vector
 
 
@@ -173,7 +168,7 @@ def load_matrix_sub(process_dict , feature_set=0 , label=cons.LABEL_NEUTRAL , is
             labels = [ ]
             for key in keys:
                 line = process_dict.get(key)
-                z = map_tweet(line , feature_set , is_co_training)
+                z = map_tweet(line , is_co_training)
                 vectors.append(z)
                 labels.append(float(label))
         else:
@@ -195,14 +190,7 @@ def get_vectors_and_labels():
                                         is_co_training=False)
     neu_vec , neu_lab = load_matrix_sub(process_dict=ds.NEU_DICT , feature_set=0 , label=cons.LABEL_NEUTRAL ,
                                         is_co_training=False)
-    pos_vec_1 , pos_lab = load_matrix_sub(process_dict=ds.POS_DICT , feature_set=1 , label=cons.LABEL_POSITIVE ,
-                                          is_co_training=False)
-    neg_vec_1 , neg_lab = load_matrix_sub(process_dict=ds.NEG_DICT , feature_set=1 , label=cons.LABEL_NEGATIVE ,
-                                          is_co_training=False)
-    neu_vec_1 , neu_lab = load_matrix_sub(process_dict=ds.NEU_DICT , feature_set=1 , label=cons.LABEL_NEUTRAL ,
-                                          is_co_training=False)
     ds.VECTORS = pos_vec + neg_vec + neu_vec
-    ds.VECTORS_1 = pos_vec_1 + neg_vec_1 + neu_vec_1
     ds.LABELS = pos_lab + neg_lab + neu_lab
     is_success = True
     return is_success
@@ -240,11 +228,7 @@ def get_vectors_and_labels_self():
     pos_vec , pos_lab = load_matrix_sub(temp_pos_dict_final , 0 , cons.LABEL_POSITIVE , True)
     neg_vec , neg_lab = load_matrix_sub(temp_neg_dict_final , 0 , cons.LABEL_NEGATIVE , True)
     neu_vec , neu_lab = load_matrix_sub(temp_neu_dict_final , 0 , cons.LABEL_NEUTRAL , True)
-    pos_vec_1 , pos_lab = load_matrix_sub(temp_pos_dict_final , 1 , cons.LABEL_POSITIVE , True)
-    neg_vec_1 , neg_lab = load_matrix_sub(temp_neg_dict_final , 1 , cons.LABEL_NEGATIVE , True)
-    neu_vec_1 , neu_lab = load_matrix_sub(temp_neu_dict_final , 1 , cons.LABEL_NEUTRAL , True)
     ds.VECTORS_SELF = pos_vec + neg_vec + neu_vec
-    ds.VECTORS_SELF_1 = pos_vec_1 + neg_vec_1 + neu_vec_1
     ds.LABELS_SELF = pos_lab + neg_lab + neu_lab
     return is_success
 
@@ -258,26 +242,19 @@ def get_modified_class_weight(sizes):
     return weights
 
 
-def generate_model(feature_set , is_co_training=False):
+def generate_model(classifier_type , is_co_training=False):
     """
     generating model and storing in main data store
-    :param feature_set: 
+    :param classifier_type: 
     :param is_co_training:
     :return:
     """
     if not is_co_training:
-        if feature_set == 1:
-            vectors = ds.VECTORS_1
-        else:
-            vectors = ds.VECTORS
+        vectors = ds.VECTORS
         labels = ds.LABELS
     else:
-        if feature_set == 1:
-            vectors = ds.VECTORS_SELF_1
-        else:
-            vectors = ds.VECTORS_SELF
+        vectors = ds.VECTORS_SELF
         labels = ds.LABELS_SELF
-    classifier_type = controller.DEFAULT_CLASSIFIER
     vectors_scaled = pr.scale(np.array(vectors))
     scaler = pr.StandardScaler().fit(vectors)
     vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
@@ -315,34 +292,32 @@ def generate_model(feature_set , is_co_training=False):
         model.fit(vectors_a , labels)
     else:
         model = None
-    if feature_set:
+    if classifier_type == cons.CLASSIFIER_XGBOOST:
         ds.SCALAR_1 = scaler
         ds.NORMALIZER_1 = normalizer
         ds.MODEL_1 = model
-    else:
+    elif classifier_type == cons.CLASSIFIER_SVM:
         ds.SCALAR = scaler
         ds.NORMALIZER = normalizer
         ds.MODEL = model
     return
 
 
-def transform_tweet(tweet,feature_set, is_co_training):
-    z = map_tweet(tweet,feature_set , is_co_training)
-    if feature_set == 1:
+def transform_tweet(tweet , classifier_type , is_co_training):
+    z = map_tweet(tweet , is_co_training)
+    if classifier_type == cons.CLASSIFIER_XGBOOST:
         z_scaled = ds.SCALAR_1.transform(z)
-    else:
-        z_scaled = ds.SCALAR.transform(z)
-    if feature_set == 1:
         z = ds.NORMALIZER_1.transform([ z_scaled ])
-    else:
+    elif classifier_type == cons.CLASSIFIER_SVM:
+        z_scaled = ds.SCALAR.transform(z)
         z = ds.NORMALIZER.transform([ z_scaled ])
     z = z[ 0 ].tolist()
     return z
 
 
 def predict(tweet , is_co_training):
-    z = transform_tweet(tweet ,0, is_co_training)
-    z_1 = transform_tweet(tweet ,1, is_co_training)
+    z = transform_tweet(tweet , cons.CLASSIFIER_SVM , is_co_training)
+    z_1 = transform_tweet(tweet , cons.CLASSIFIER_XGBOOST , is_co_training)
     predict_proba = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
     predict_proba_1 = ds.MODEL_1.predict_proba([ z_1 ]).tolist()[ 0 ]
     f_p , s_p = commons.find_first_second_max(predict_proba)
@@ -377,8 +352,8 @@ def predict(tweet , is_co_training):
 
 
 def predict_for_self_training(tweet , last_label , is_co_training):
-    z = transform_tweet(tweet ,0, is_co_training)
-    z_1 = transform_tweet(tweet ,1, is_co_training)
+    z = transform_tweet(tweet , cons.CLASSIFIER_SVM , is_co_training)
+    z_1 = transform_tweet(tweet , cons.CLASSIFIER_XGBOOST , is_co_training)
     predict_proba = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
     predict_proba_1 = ds.MODEL_1.predict_proba([ z_1 ]).tolist()[ 0 ]
     f_p , s_p = commons.find_first_second_max(predict_proba)
@@ -502,8 +477,8 @@ def load_iteration_dict(is_co_training):
 def initial_run():
     load_initial_dictionaries()
     get_vectors_and_labels()
-    generate_model(0, False)
-    generate_model(1, False)
+    generate_model(cons.CLASSIFIER_SVM , False)
+    generate_model(cons.CLASSIFIER_XGBOOST , False)
     store_test(False)
     result = get_result(ds.TEST_DICT)
     ds.CURRENT_F_SCORE = result[ len(result) - 1 ]
@@ -515,8 +490,8 @@ def initial_run():
 def co_training_run(is_co_training):
     load_iteration_dict(is_co_training)
     get_vectors_and_labels_self()
-    generate_model(0, True)
-    generate_model(1, True)
+    generate_model(cons.CLASSIFIER_SVM , True)
+    generate_model(cons.CLASSIFIER_XGBOOST , True)
     store_test(True)
     result = get_result(ds.TEST_DICT)
     if result[ len(result) - 1 ] < ds.CURRENT_F_SCORE:
