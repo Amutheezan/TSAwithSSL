@@ -14,6 +14,7 @@ import _generic_commons_ as commons
 import _global_data_store_ as ds
 import _pre_process_ as ppros
 import _writing_style_ as ws
+from xgboost import  XGBClassifier
 
 warnings.filterwarnings('ignore')
 
@@ -294,6 +295,24 @@ def generate_model(feature_set , is_co_training=False):
         model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                         class_weight=class_weights , gamma=gamma , probability=True)
         model.fit(vectors , labels)
+    elif classifier_type == cons.CLASSIFIER_XGBOOST:
+        learning_rate = globals.DEFAULT_LEARNING_RATE
+        max_depth = globals.DEFAULT_MAX_DEPTH
+        min_child_weight = globals.DEFAULT_MIN_CHILD_WEIGHT
+        silent = globals.DEFAULT_SILENT
+        objective = globals.DEFAULT_OBJECTIVE
+        subsample = globals.DEFAULT_SUB_SAMPLE
+        gamma = globals.DEFAULT_GAMMA_XBOOST
+        reg_alpha = globals.DEFAULT_REGRESSION_ALPHA
+        n_estimators = globals.DEFAULT_N_ESTIMATORS
+        colsample_bytree = globals.DEFAULT_COLSAMPLE_BYTREE
+        model = XGBClassifier(learning_rate=learning_rate , max_depth=max_depth ,
+                              min_child_weight=min_child_weight , silent=silent ,
+                              objective=objective , subsample=subsample , gamma=gamma ,
+                              reg_alpha=reg_alpha , n_estimators=n_estimators ,
+                              colsample_bytree=colsample_bytree , )
+        vectors_a = np.asarray(vectors)
+        model.fit(vectors_a , labels)
     else:
         model = None
     if feature_set:
