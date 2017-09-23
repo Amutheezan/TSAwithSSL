@@ -17,7 +17,7 @@ def emoticon_score(tweet):
 def unicode_emoticon_score(tweet):
     s = 0.0
     nbr = 0
-    tweet = tweet.split();
+    tweet = tweet.split()
     for i in range(len(tweet)):
         old = tweet[i]
         new = old.replace("\U000", "0x")

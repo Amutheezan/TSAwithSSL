@@ -1,3 +1,6 @@
+import math
+
+
 def temp_difference_cal(time_list):
     """
     This function is used when a set of time values are added and difference between last two are obtained
@@ -41,3 +44,25 @@ def get_divided_value(numerator, denominator):
     else:
         result = numerator / (denominator * 1.0)
         return round(result, 4)
+
+
+def get_entropy(proba):
+    """
+    calculate entropy based formula -p(x)log(x)
+    :param proba: 
+    :return: 
+    """
+    if proba == 0:
+        return 0.0
+    else:
+        return round(-1.0 * (proba) * math.log(proba, 2), 2)
+
+
+def find_first_second_max(input_list):
+    first_max = 0.0
+    second_max = 0.0
+    for element in input_list:
+        if element > first_max:
+            second_max = first_max
+            first_max = element
+    return first_max,second_max

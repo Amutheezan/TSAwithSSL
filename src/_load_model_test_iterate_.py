@@ -293,49 +293,46 @@ def transform_tweet(tweet, is_self_training):
 
 def predict(tweet, is_self_training):
     z = transform_tweet(tweet,is_self_training)
-    predict_proba = ds.MODEL.predict_proba([z]).tolist()[ 0 ]
-    max_probability = max(predict_proba)
-    if max_probability > cons.PERCENTAGE_UNIFORM:
-        if max_probability < cons.PERCENTAGE_MINIMUM_CONF:
+    predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
+    f_p, s_p = commons.find_first_second_max(predict_proba)
+    if f_p > cons.PERCENTAGE_UNIFORM:
+        if f_p < cons.PERCENTAGE_MINIMUM_CONF or\
+                        (f_p - s_p) < cons.PERCENTAGE_MINIMUM_DIFF:
             predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
             return predict_proba, True
-        else:
-            if predict_proba[0] == max_probability:
+        elif f_p >= cons.PERCENTAGE_MINIMUM_CONF and\
+                        (f_p - s_p) >= cons.PERCENTAGE_MINIMUM_DIFF:
+            if predict_proba[0] == f_p:
                 return cons.LABEL_NEGATIVE, True
-            if predict_proba[1] == max_probability:
+            if predict_proba[1] == f_p:
                 return cons.LABEL_NEUTRAL, True
-            if predict_proba[2] == max_probability:
+            if predict_proba[2] == f_p:
                 return cons.LABEL_POSITIVE, True
     else:
         predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
         return predict_proba, True
 
 
-def predict_for_self_training(tweet,last_label, is_self_training):
-    z = transform_tweet(tweet , is_self_training)
+def predict_for_self_training(tweet, last_label, is_self_training):
+    current_label = cons.UNLABELED
+    z = transform_tweet(tweet, is_self_training)
     predict_proba = ds.MODEL.predict_proba([z]).tolist()[0]
-
-    max_proba = 0.0
-    next_max_proba = 0.0
-
-    for i in range(len(predict_proba)):
-        if predict_proba[i] > max_proba:
-            next_max_proba = max_proba
-            max_proba = predict_proba[i]
-
-    if max_proba < cons.PERCENTAGE_MINIMUM_CONF or\
-                    (max_proba - next_max_proba) < cons.PERCENTAGE_MINIMUM_DIFF:
-        if last_label is cons.UNLABELED:
-            return cons.UNLABELED
-        else:
-            return last_label
+    entropy = [commons.get_entropy(proba) for proba in predict_proba]
+    f_p, s_p = commons.find_first_second_max(predict_proba)
+    f_e, s_e = commons.find_first_second_max(entropy)
+    if f_e <= cons.ENTROPY_MAXIMUM_CONF and f_p > cons.PERCENTAGE_MINIMUM_CONF \
+        and (f_p - s_p) > cons.PERCENTAGE_MINIMUM_DIFF:
+        if predict_proba[0] == f_p:
+            current_label = cons.LABEL_NEGATIVE
+        if predict_proba[1] == f_p:
+            current_label = cons.LABEL_NEUTRAL
+        if predict_proba[2] == f_p:
+            current_label = cons.LABEL_POSITIVE
     else:
-        if predict_proba[0] == max_proba:
-            return cons.LABEL_NEGATIVE
-        if predict_proba[1] == max_proba:
-            return cons.LABEL_NEUTRAL
-        if predict_proba[2] == max_proba:
-            return cons.LABEL_POSITIVE
+        current_label = last_label
+        # This can be unlabeled or labeled
+
+    return current_label
 
 
 def store_test(is_self_training):
