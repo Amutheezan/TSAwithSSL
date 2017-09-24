@@ -334,11 +334,11 @@ def predict(tweet , is_co_training):
             if predict == cons.LABEL_NEGATIVE and predict_1 == cons.LABEL_POSITIVE:
                 return cons.LABEL_NEUTRAL , True
             if predict == cons.LABEL_NEGATIVE and predict_1 == cons.LABEL_NEUTRAL:
-                return cons.LABEL_NEUTRAL , True
-            if predict == cons.LABEL_NEGATIVE and predict_1 == cons.LABEL_POSITIVE:
-                return cons.LABEL_NEUTRAL , True
-            if predict == cons.LABEL_NEGATIVE and predict_1 == cons.LABEL_NEUTRAL:
-                return cons.LABEL_NEUTRAL , True
+                return cons.LABEL_NEGATIVE, True
+            if predict == cons.LABEL_NEUTRAL and predict_1 == cons.LABEL_POSITIVE:
+                return cons.LABEL_POSITIVE , True
+            if predict == cons.LABEL_NEUTRAL and predict_1 == cons.LABEL_NEGATIVE:
+                return cons.LABEL_NEGATIVE , True
         else:
             return predict , True
     else:
