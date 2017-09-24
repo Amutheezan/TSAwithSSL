@@ -286,7 +286,7 @@ def generate_model(classifier_type , is_co_training=False):
                               reg_alpha=reg_alpha , n_estimators=n_estimators ,
                               colsample_bytree=colsample_bytree , )
         vectors_a = np.asarray(vectors)
-        model.fit(vectors_a , labels,class_weights)
+        model.fit(vectors_a , labels)
     else:
         model = None
     if classifier_type == cons.CLASSIFIER_XGBOOST:
