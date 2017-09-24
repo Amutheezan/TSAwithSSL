@@ -251,7 +251,9 @@ def generate_model(classifier_type , is_co_training=False):
     if not is_co_training:
         vectors = ds.VECTORS
         labels = ds.LABELS
+        class_weights = controller.DEFAULT_CLASS_WEIGHTS
     else:
+        class_weights = get_modified_class_weight(get_size(True))
         vectors = ds.VECTORS_SELF
         labels = ds.LABELS_SELF
     vectors_scaled = pr.scale(np.array(vectors))
@@ -264,10 +266,6 @@ def generate_model(classifier_type , is_co_training=False):
         kernel_function = controller.DEFAULT_KERNEL
         c_parameter = controller.DEFAULT_C_PARAMETER
         gamma = controller.DEFAULT_GAMMA_SVM
-        if is_co_training:
-            class_weights = get_modified_class_weight(get_size(True))
-        else:
-            class_weights = controller.DEFAULT_CLASS_WEIGHTS
         model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                         class_weight=class_weights , gamma=gamma , probability=True)
         model.fit(vectors , labels)
@@ -288,7 +286,7 @@ def generate_model(classifier_type , is_co_training=False):
                               reg_alpha=reg_alpha , n_estimators=n_estimators ,
                               colsample_bytree=colsample_bytree , )
         vectors_a = np.asarray(vectors)
-        model.fit(vectors_a , labels)
+        model.fit(vectors_a , labels,class_weights)
     else:
         model = None
     if classifier_type == cons.CLASSIFIER_XGBOOST:
