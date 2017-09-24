@@ -314,19 +314,34 @@ def transform_tweet(tweet , classifier_type , is_co_training):
     return z
 
 
+def get_labels(p,prob):
+    l = cons.UNLABELED
+    if prob[0] == p:
+        l = cons.LABEL_NEGATIVE
+    if prob[1] == p:
+        l = cons.LABEL_NEUTRAL
+    if prob[2] == p:
+        l = cons.LABEL_POSITIVE
+    return  l
+
+
 def predict(tweet , is_co_training):
     z = transform_tweet(tweet , cons.CLASSIFIER_SVM , is_co_training)
     z_1 = transform_tweet(tweet , cons.CLASSIFIER_XGBOOST , is_co_training)
     predict_proba = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
     predict_proba_1 = ds.MODEL_1.predict_proba([ z_1 ]).tolist()[ 0 ]
-    f_p , s_p = commons.find_first_second_max(predict_proba)
-    f_p_1 , s_p_1 = commons.find_first_second_max(predict_proba_1)
-    max_diff = min(f_p - s_p , f_p_1 - s_p_1)
-    equality_min = (f_p == f_p_1 and f_p < cons.PERCENTAGE_MINIMUM_CONF)
-    if f_p != f_p_1 or max_diff < cons.PERCENTAGE_MINIMUM_DIFF or equality_min:
-        predict = ds.MODEL.predict([ z ]).tolist()[ 0 ]
-        predict_1 = ds.MODEL_1.predict([ z_1 ]).tolist()[ 0 ]
-        if predict_1 != predict_1:
+    f_p, s_p = commons.find_first_second_max(predict_proba)
+    f_p_l = get_labels(f_p, predict_proba)
+    s_p_l = get_labels(s_p, predict_proba)
+    f_p_1, s_p_1 = commons.find_first_second_max(predict_proba_1)
+    f_p_l_1 = get_labels(f_p_1, predict_proba_1)
+    s_p_l_1 = get_labels(s_p_1, predict_proba_1)
+    max_diff = min(f_p - s_p, f_p_1 - s_p_1)
+    equality_min = (f_p_l == f_p_l_1 and f_p < cons.PERCENTAGE_MINIMUM_CONF)
+    if f_p_l != f_p_l_1 or max_diff < cons.PERCENTAGE_MINIMUM_DIFF or equality_min:
+        predict = ds.MODEL.predict([z]).tolist()[ 0 ]
+        predict_1 = ds.MODEL_1.predict([z_1]).tolist()[ 0 ]
+        if predict != predict_1:
             if predict == cons.LABEL_POSITIVE and predict_1 == cons.LABEL_NEGATIVE:
                 return cons.LABEL_NEUTRAL , True
             if predict == cons.LABEL_POSITIVE and predict_1 == cons.LABEL_NEUTRAL:
@@ -342,32 +357,26 @@ def predict(tweet , is_co_training):
         else:
             return predict , True
     else:
-        if predict_proba[ 0 ] == f_p:
-            return cons.LABEL_NEGATIVE , True
-        if predict_proba[ 1 ] == f_p:
-            return cons.LABEL_NEUTRAL , True
-        if predict_proba[ 2 ] == f_p:
-            return cons.LABEL_POSITIVE , True
+        return f_p_l,True
 
 
-def predict_for_self_training(tweet , last_label , is_co_training):
+def predict_for_co_training(tweet , last_label , is_co_training):
     z = transform_tweet(tweet , cons.CLASSIFIER_SVM , is_co_training)
     z_1 = transform_tweet(tweet , cons.CLASSIFIER_XGBOOST , is_co_training)
     predict_proba = ds.MODEL.predict_proba([ z ]).tolist()[ 0 ]
     predict_proba_1 = ds.MODEL_1.predict_proba([ z_1 ]).tolist()[ 0 ]
-    f_p , s_p = commons.find_first_second_max(predict_proba)
-    f_p_1 , s_p_1 = commons.find_first_second_max(predict_proba_1)
+    f_p, s_p = commons.find_first_second_max(predict_proba)
+    f_p_l = get_labels(f_p, predict_proba)
+    s_p_l = get_labels(s_p, predict_proba)
+    f_p_1, s_p_1 = commons.find_first_second_max(predict_proba_1)
+    f_p_l_1 = get_labels(f_p_1, predict_proba_1)
+    s_p_l_1 = get_labels(s_p_1, predict_proba_1)
     max_diff = min(f_p - s_p , f_p_1 - s_p_1)
-    equality_min = (f_p == f_p_1 and f_p < cons.PERCENTAGE_MINIMUM_CONF)
-    if f_p != f_p_1 or max_diff < cons.PERCENTAGE_MINIMUM_DIFF or equality_min:
+    equality_min = (f_p_l == f_p_l_1 and f_p < cons.PERCENTAGE_MINIMUM_CONF)
+    if f_p_l != f_p_l_1 or max_diff < cons.PERCENTAGE_MINIMUM_DIFF or equality_min:
         return last_label
     else:
-        if predict_proba[ 0 ] == f_p:
-            return cons.LABEL_NEGATIVE
-        if predict_proba[ 1 ] == f_p:
-            return cons.LABEL_NEUTRAL
-        if predict_proba[ 2 ] == f_p:
-            return cons.LABEL_POSITIVE
+        return f_p_l
 
 
 def store_test(is_co_training):
@@ -453,7 +462,7 @@ def load_iteration_dict(is_co_training):
 
         for key in ds.UNLABELED_DICT.keys():
             tweet , last_label = ds.UNLABELED_DICT.get(key)
-            nl = predict_for_self_training(tweet , last_label , is_co_training)
+            nl = predict_for_co_training(tweet , last_label , is_co_training)
             if nl == cons.LABEL_POSITIVE:
                 temp_pos_dict[ key ] = tweet
             if nl == cons.LABEL_NEGATIVE:
