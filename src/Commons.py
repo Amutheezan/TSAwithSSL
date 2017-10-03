@@ -101,11 +101,11 @@ class Commons:
             p = predict[i]
             if a == p:
                 if a == self.config.LABEL_POSITIVE:
-                    TP +=1
+                    TP += 1
                 if a == self.config.LABEL_NEUTRAL:
-                    TNeu +=1
+                    TNeu += 1
                 if a == self.config.LABEL_NEGATIVE:
-                    TN +=1
+                    TN += 1
             if a != p:
                 if a == self.config.LABEL_POSITIVE:
                     if p == self.config.LABEL_NEGATIVE:

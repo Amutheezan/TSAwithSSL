@@ -39,10 +39,10 @@ class Configuration:
 
     # Constants relevant at predicting
     PERCENTAGE_MINIMUM_DIFF = 0.1
-    PERCENTAGE_MINIMUM_CONF = 0.5
+    PERCENTAGE_MINIMUM_CONF = 0.9
 
-    CSV_HEADER = [ "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
-                   "PRE-POS" , "PRE-NEG" , "PRE-NEU" , "RE-POS" , "RE-NEG" , "RE-NEU" ,
+    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
+                   "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
 
     def __init__(self):
@@ -56,8 +56,17 @@ class Configuration:
 
         if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:
             self.DEFAULT_KERNEL_0 = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER_0 = 0.28
-            self.DEFAULT_GAMMA_SVM_0 = 1.0
+            self.DEFAULT_C_PARAMETER_0 = 0.1
+            self.DEFAULT_GAMMA_SVM_0 = 0.1
             self.DEFAULT_KERNEL = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER = 0.28
-            self.DEFAULT_GAMMA_SVM = 1.0
+            self.DEFAULT_C_PARAMETER = 0.73
+            self.DEFAULT_GAMMA_SVM = 1.02
+
+
+#  Feature Set 1
+#  {'kernel': 'rbf', 'C': 0.7, 'gamma': 1.0} 0.591580193034
+#  {'kernel': 'rbf', 'C': 0.73, 'gamma': 1.02} 0.593126981136
+
+# Feature Set 0
+# {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651
+# {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651

@@ -10,9 +10,9 @@ class DataStore:
 
         # Storing the vectors and labels, and there is another vector set for
         # 2nd feature set
-        self.VECTORS = [ ]
-        self.LABELS = [ ]
-        self.VECTORS_0 = [ ]
+        self.VECTORS = []
+        self.LABELS = []
+        self.VECTORS_0 = []
 
         # Model and relevant parameters such as scalar and normalizer
         self.MODEL = None
@@ -36,13 +36,13 @@ class DataStore:
         self.NEG_UNI_GRAM_ITER= {}
         self.NEU_UNI_GRAM_ITER= {}
 
-        self.POS_POST_UNI_GRAM_ITER= {}
-        self.NEG_POST_UNI_GRAM_ITER= {}
-        self.NEU_POST_UNI_GRAM_ITER= {}
+        self.POS_POST_UNI_GRAM_ITER = {}
+        self.NEG_POST_UNI_GRAM_ITER = {}
+        self.NEU_POST_UNI_GRAM_ITER = {}
 
-        self.VECTORS_ITER= [ ]
-        self.LABELS_ITER= [ ]
-        self.VECTORS_ITER_0 = [ ]
+        self.VECTORS_ITER = []
+        self.LABELS_ITER = []
+        self.VECTORS_ITER_0 = []
 
         self.MODEL_0 = None
         self.SCALAR_0 = None
