@@ -25,7 +25,7 @@ class Wrapper:
         self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.POS_RATIO)
         self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEG_RATIO)
         self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEU_RATIO)
-        self.final_file = '../dataset/analysed/iteration_' + self.get_file_prefix() + str(time.time())
+        self.final_file = ''
 
     def get_file_prefix(self):
         return "{0}_{1}_{2}_". \

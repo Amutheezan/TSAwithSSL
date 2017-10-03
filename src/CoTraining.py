@@ -8,6 +8,7 @@ warnings.filterwarnings('ignore')
 class CoTraining(Wrapper):
     def __init__(self, label, un_label, test):
         Wrapper.__init__(self, label, un_label,test)
+        self.final_file = '../dataset/analysed/co_training_' + self.get_file_prefix() + str(time.time())
 
     def map_tweet(self , tweet , mode , is_iteration):
         """
