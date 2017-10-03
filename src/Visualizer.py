@@ -1,7 +1,7 @@
-from CoTraining import CoTraining
 
 from tkinter import *
 import tkinter.messagebox as tm
+from CoTraining import CoTraining
 
 
 class MainFrame(Frame):

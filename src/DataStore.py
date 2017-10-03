@@ -20,9 +20,9 @@ class DataStore:
         self.NORMALIZER = None
 
         # Below are duplicate of co-training...
-        self.POS_DICT_CO = {}
-        self.NEG_DICT_CO = {}
-        self.NEU_DICT_CO = {}
+        self.POS_DICT_ITER= {}
+        self.NEG_DICT_ITER= {}
+        self.NEU_DICT_ITER= {}
 
         self.POS_UNI_GRAM = {}
         self.NEG_UNI_GRAM = {}
@@ -32,17 +32,17 @@ class DataStore:
         self.NEG_POST_UNI_GRAM = {}
         self.NEU_POST_UNI_GRAM = {}
 
-        self.POS_UNI_GRAM_CO = {}
-        self.NEG_UNI_GRAM_CO = {}
-        self.NEU_UNI_GRAM_CO = {}
+        self.POS_UNI_GRAM_ITER= {}
+        self.NEG_UNI_GRAM_ITER= {}
+        self.NEU_UNI_GRAM_ITER= {}
 
-        self.POS_POST_UNI_GRAM_CO = {}
-        self.NEG_POST_UNI_GRAM_CO = {}
-        self.NEU_POST_UNI_GRAM_CO = {}
+        self.POS_POST_UNI_GRAM_ITER= {}
+        self.NEG_POST_UNI_GRAM_ITER= {}
+        self.NEU_POST_UNI_GRAM_ITER= {}
 
-        self.VECTORS_CO = [ ]
-        self.LABELS_CO = [ ]
-        self.VECTORS_CO_0 = [ ]
+        self.VECTORS_ITER= [ ]
+        self.LABELS_ITER= [ ]
+        self.VECTORS_ITER_0 = [ ]
 
         self.MODEL_0 = None
         self.SCALAR_0 = None
@@ -52,9 +52,9 @@ class DataStore:
 
     def _update_initial_dict_(self , pos , neg , neu , un_label , is_iteration):
         if is_iteration:
-            self.POS_DICT_CO = pos
-            self.NEG_DICT_CO = neg
-            self.NEU_DICT_CO = neu
+            self.POS_DICT_ITER= pos
+            self.NEG_DICT_ITER= neg
+            self.NEU_DICT_ITER= neu
         if not is_iteration:
             self.POS_DICT = pos
             self.NEG_DICT = neg
@@ -64,10 +64,10 @@ class DataStore:
     def _update_vectors_labels_(self , vector , labels , mode , is_iteration):
         if is_iteration:
             if mode:
-                self.VECTORS_CO = vector
+                self.VECTORS_ITER= vector
             if not mode:
-                self.VECTORS_CO_0 = vector
-            self.LABELS_CO = labels
+                self.VECTORS_ITER_0 = vector
+            self.LABELS_ITER= labels
         if not is_iteration:
             if mode:
                 self.VECTORS = vector
@@ -78,13 +78,13 @@ class DataStore:
     def _update_uni_gram_(self , pos , neg , neu , is_pos_tag , is_iteration):
         if is_iteration:
             if is_pos_tag:
-                self.POS_POST_UNI_GRAM_CO = pos
-                self.NEG_POST_UNI_GRAM_CO = neg
-                self.NEU_POST_UNI_GRAM_CO = neu
+                self.POS_POST_UNI_GRAM_ITER= pos
+                self.NEG_POST_UNI_GRAM_ITER= neg
+                self.NEU_POST_UNI_GRAM_ITER= neu
             if not is_pos_tag:
-                self.POS_UNI_GRAM_CO = pos
-                self.NEG_UNI_GRAM_CO = neg
-                self.NEU_UNI_GRAM_CO = neu
+                self.POS_UNI_GRAM_ITER= pos
+                self.NEG_UNI_GRAM_ITER= neg
+                self.NEU_UNI_GRAM_ITER= neu
         if not is_iteration:
             if is_pos_tag:
                 self.POS_POST_UNI_GRAM = pos

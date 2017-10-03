@@ -86,13 +86,6 @@ class Commons:
             result.append(0.5 * (first[ i ] + second[ i ]))
         return result
 
-    def get_file_prefix(self):
-        return "{0}_{1}_{2}_". \
-            format(
-            str(self.config.LABEL_LIMIT) ,
-            str(self.config.TEST_LIMIT) , str(self.config.DEFAULT_CLASSIFIER)
-        )
-
     def get_values(self,actual, predict):
         TP = 0
         TN = 0
@@ -130,7 +123,7 @@ class Commons:
                     if p == self.config.LABEL_NEGATIVE:
                         FN_Neu += 1
 
-        accuracy = self.get_divided_value(TP+TN+TNeu, FP_N+FP_Neu+FN_P+FN_Neu+FNeu_P+FNeu_N)
+        accuracy = self.get_divided_value(TP+TN+TNeu, TP+TN+TNeu+FP_N+FP_Neu+FN_P+FN_Neu+FNeu_P+FNeu_N)
         pre_pos = self.get_divided_value(TP , TP + FP_Neu + FP_N)
         pre_neg = self.get_divided_value(TN , TN + FN_Neu + FN_P)
         re_pos = self.get_divided_value(TP,TP+FNeu_P+FN_P)

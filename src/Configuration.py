@@ -41,12 +41,6 @@ class Configuration:
     PERCENTAGE_MINIMUM_DIFF = 0.1
     PERCENTAGE_MINIMUM_CONF = 0.5
 
-    DEFAULT_CLASSIFIER = CLASSIFIER_SVM
-
-    DEFAULT_KERNEL = KERNEL_RBF
-    DEFAULT_C_PARAMETER = 0.28
-    DEFAULT_GAMMA_SVM = 1.0
-
     CSV_HEADER = [ "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "PRE-NEU" , "RE-POS" , "RE-NEG" , "RE-NEU" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
@@ -61,6 +55,9 @@ class Configuration:
                            self.TEST_TYPE_SMS]
 
         if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:
+            self.DEFAULT_KERNEL_0 = self.KERNEL_RBF
+            self.DEFAULT_C_PARAMETER_0 = 0.28
+            self.DEFAULT_GAMMA_SVM_0 = 1.0
             self.DEFAULT_KERNEL = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER = 0.91
-            self.DEFAULT_GAMMA_SVM = 0.03
+            self.DEFAULT_C_PARAMETER = 0.28
+            self.DEFAULT_GAMMA_SVM = 1.0
