@@ -39,7 +39,8 @@ class Configuration:
 
     # Constants relevant at predicting
     PERCENTAGE_MINIMUM_DIFF = 0.1
-    PERCENTAGE_MINIMUM_CONF = 0.9
+    PERCENTAGE_MINIMUM_CONF_CO = 0.9
+    PERCENTAGE_MINIMUM_CONF_SELF = 0.5
 
     CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
@@ -61,7 +62,15 @@ class Configuration:
             self.DEFAULT_KERNEL = self.KERNEL_RBF
             self.DEFAULT_C_PARAMETER = 0.73
             self.DEFAULT_GAMMA_SVM = 1.02
+            self.DEFAULT_KERNEL_SELF = self.KERNEL_RBF
+            self.DEFAULT_C_PARAMETER_SELF = 0.28
+            self.DEFAULT_GAMMA_SVM_SELF = 1.00
 
+# SELF_TRAINING PARAMETERS
+
+# {'kernel': 'rbf', 'C' : 0.28, 'gamma' :1.0} 0.65
+
+# CO_TRAINING PARAMETERS
 
 #  Feature Set 1
 #  {'kernel': 'rbf', 'C': 0.7, 'gamma': 1.0} 0.591580193034

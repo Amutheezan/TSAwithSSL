@@ -158,11 +158,6 @@ class Wrapper:
         self.make_model_save(True,test_type)
         return
 
-    def make_model_save(self, is_iteration,test_type):
-        self.generate_model(0, is_iteration)
-        self.generate_model(1, is_iteration)
-        self.save_result(is_iteration,test_type)
-
     def get_size(self, is_iteration):
         if is_iteration:
             pos_size = len(self.ds.POS_DICT) + len(self.ds.POS_DICT_ITER)
@@ -184,10 +179,10 @@ class Wrapper:
 
     def do_training(self):
         for test_type in self.config.TEST_TYPES:
+            self.ds.CURRENT_ITERATION = 0
             time_list = [time.time()]
             self.initial_run(test_type)
-            self.ds.CURRENT_ITERATION = 0
-            while self.ds.CURRENT_ITERATION < 10:
+            while self.ds.CURRENT_ITERATION < 11:
                 if self.ds.CURRENT_ITERATION == 0:
                     is_iteration = False
                 else:
@@ -210,4 +205,7 @@ class Wrapper:
         pass
     
     def get_vectors_and_labels_iteration(self):
+        pass
+
+    def make_model_save(self , param , test_type):
         pass

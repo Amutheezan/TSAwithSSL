@@ -1,12 +1,13 @@
 from tkinter import *
 import tkinter.messagebox as tm
 from CoTraining import CoTraining
+from SelfTraining import SelfTraining
 
 
 class MainFrame(Frame):
     def __init__(self,master):
         Frame.__init__(self)
-        self.label_head = Label(self , text="Twitter Sentiment Analysis")
+        self.label_head = Label(self , text="Twitter Sentiment Analysis", fg="#00008b",)
         self.label_head.config(font=("Times New Roman" , 20))
         self.label_head.grid(columnspan=2)
 
@@ -33,9 +34,9 @@ class MainFrame(Frame):
         self.entry_test.grid(row=3 , column=1)
         self.entry_test.insert(END,'10000')
 
-        self.train_btn = Button(self , text="Train Model" , command=self._generate_model_)
+        self.train_btn = Button(self , text="Train Model" ,  fg="#a1dbcd", bg="#383a39", command=self._generate_model_)
         self.train_btn.grid(row=4, column=1)
-        self.predict_btn = Button(self , text="Predict Tweet" , command=self._predict_model_)
+        self.predict_btn = Button(self , text="Predict Tweet" ,  fg="#a1dbcd", bg="#383a39", command=self._predict_model_)
         self.predict_btn.grid(row=8, columnspan=2)
 
         self.model_generated = False
@@ -54,7 +55,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        self.method = CoTraining(label, un_label,test)
+        self.method = SelfTraining(label, un_label,test)
 
     def _generate_model_(self):
         self._get_configuration_()
