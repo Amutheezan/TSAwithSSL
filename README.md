@@ -1,12 +1,18 @@
 # Twitter Sentiment Analysis 
 ## Wrapper Based Techniques
-### Co - Training
+
+### Self-Training
 
 #### Methodology 
-Considering Two Feature Sets, and Trying to Improve the Predictions.According keeping 
-the n-grams as one separate and rest of features another feature set. Idea is two feature
-set should be independent compare to other one.
+Will be updated soon
 
 #### Observation
-As so far not better results obtained, we are trying to figure out issues and improving
-it.
+Will be updated soon
+
+### Co-Training
+
+#### Methodology 
+Will be updated soon
+
+#### Observation
+Will be updated soon

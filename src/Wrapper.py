@@ -120,6 +120,68 @@ class Wrapper:
         if l == self.config.LABEL_NEUTRAL:
             return self.config.NAME_NEUTRAL
 
+    def load_matrix_sub(self , process_dict , mode , label , is_iteration):
+        """
+        :param process_dict:
+        :param mode:
+        :param label:
+        :param is_iteration:
+        :return:
+        """
+        limit = self.LABEL_LIMIT
+        if limit != 0:
+            keys = process_dict.keys()
+            if len(keys) > 0:
+                vectors = []
+                labels = []
+                for key in keys:
+                    line = process_dict.get(key)
+                    z = self.map_tweet(line , mode , is_iteration)
+                    vectors.append(z)
+                    labels.append(float(label))
+            else:
+                vectors = [ ]
+                labels = [ ]
+        else:
+            vectors = [ ]
+            labels = [ ]
+        return vectors , labels
+
+    def map_tweet_n_gram_values(self , tweet , is_iteration):
+        """
+        :param tweet: 
+        :param is_iteration: 
+        :return: 
+        """
+        vector = [ ]
+
+        preprocessed_tweet = self.pre_pros.pre_process_tweet(tweet)
+        pos_tag_tweet = self.pre_pros.pos_tag_string(preprocessed_tweet)
+
+        if not is_iteration:
+            uni_gram_score = self.n_gram.score(preprocessed_tweet , self.ds.POS_UNI_GRAM , self.ds.NEG_UNI_GRAM ,
+                                               self.ds.NEU_UNI_GRAM , 1)
+            post_uni_gram_score = self.n_gram.score(pos_tag_tweet , self.ds.POS_POST_UNI_GRAM ,
+                                                    self.ds.NEG_POST_UNI_GRAM ,
+                                                    self.ds.NEU_POST_UNI_GRAM , 1)
+        else:
+            uni_gram_score = self.n_gram.score(preprocessed_tweet , self.ds.POS_UNI_GRAM_ITER , self.ds.NEG_UNI_GRAM_ITER ,
+                                               self.ds.NEU_UNI_GRAM_ITER , 1)
+            post_uni_gram_score = self.n_gram.score(pos_tag_tweet , self.ds.POS_POST_UNI_GRAM_ITER ,
+                                                    self.ds.NEG_POST_UNI_GRAM_ITER ,
+                                                    self.ds.NEU_POST_UNI_GRAM_ITER , 1)
+        vector.append(self.mb.emoticon_score(tweet))
+        vector.append(self.mb.unicode_emoticon_score(tweet))
+        vector.extend(self.ws.writing_style_vector(tweet))
+        vector.extend(uni_gram_score)
+        vector.extend(post_uni_gram_score)
+
+        return vector
+
+    def map_tweet_feature_values(self, tweet):
+        vector = self.lexicon._all_in_lexicon_score_(tweet)
+        return vector
+
     def load_iteration_dict(self , is_iteration):
         if len(self.ds.UNLABELED_DICT) > 0:
 
@@ -208,4 +270,7 @@ class Wrapper:
         pass
 
     def make_model_save(self , param , test_type):
+        pass
+
+    def map_tweet(self , line , mode , is_iteration):
         pass
