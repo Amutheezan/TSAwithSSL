@@ -23,6 +23,7 @@ method_new = CoTraining(label,unlabel,test)
 method_new.do_training()
 ```
 and look into your terminal it displays the results.
+
   2. Run Using Visual Methods
    1. Using Python GUI,by typing python Visualizer.py
    2. Using Flask based Web GUI, by typing python Server.py 
