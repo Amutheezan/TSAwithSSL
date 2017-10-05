@@ -14,19 +14,19 @@ You can start working 2 ways,
  
         python
         
-        ```python
-        from SelfTraining import SelfTraining
-        method_new = SelfTraining(label,unlabel,test)
-        ### You can fill the label,unlabel and test with any possible integer values greater than 100
-        method_new.do_training()
-        
-        or
-        
-        from CoTraining import CoTraining
-        method_new = CoTraining(label,unlabel,test)
-        ### You can fill the label,unlabel and test with any possible integer values greater than 100
-        method_new.do_training()
-        ```
+    ```python
+    from SelfTraining import SelfTraining
+    method_new = SelfTraining(label,unlabel,test)
+    ### You can fill the label,unlabel and test with any possible integer values greater than 100
+    method_new.do_training()
+    
+    or
+    
+    from CoTraining import CoTraining
+    method_new = CoTraining(label,unlabel,test)
+    ### You can fill the label,unlabel and test with any possible integer values greater than 100
+    method_new.do_training()
+    ```
 and look into your terminal it displays the results.
 
   2. Run Using Visual Methods
