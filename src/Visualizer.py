@@ -55,7 +55,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        self.method = CoTraining(label, un_label,test)
+        self.method = SelfTraining(label, un_label,test)
 
     def _generate_model_(self):
         self._get_configuration_()
