@@ -28,22 +28,21 @@ NOTE: for this you need to install flask for python.using command
  and name it as test.py, and add the following code.
  
   
-        
-    ```python
-    from SelfTraining import SelfTraining
-    method_new = SelfTraining(label,unlabel,test)
-    # You can fill the label,unlabel and test with 
-    # any possible integer values greater than 100
-    method_new.do_training()
-    
-    or
-    
-    from CoTraining import CoTraining
-    method_new = CoTraining(label,unlabel,test)
-    # You can fill the label,unlabel and test with 
-    # any possible integer values greater than 100
-    method_new.do_training()
-    ```
+```python
+from SelfTraining import SelfTraining
+method_new = SelfTraining(label,unlabel,test)
+# You can fill the label,unlabel and test with 
+# any possible integer values greater than 100
+method_new.do_training()
+
+or
+
+from CoTraining import CoTraining
+method_new = CoTraining(label,unlabel,test)
+# You can fill the label,unlabel and test with 
+# any possible integer values greater than 100
+method_new.do_training()
+```
 and run the file using command prompt using,
             
                 python test.py
