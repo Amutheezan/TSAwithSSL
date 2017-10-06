@@ -10,35 +10,45 @@ class MainFrame(Frame):
         self.label_head = Label(self , text="Twitter Sentiment Analysis", fg="#00008b",)
         self.label_head.config(font=("Times New Roman" , 20))
         self.label_head.grid(columnspan=2)
-
+        self.label_head = Label(self , text="Semi-supervised Techniques", fg="#040455",)
+        self.label_head.config(font=("Times New Roman" , 18))
+        self.label_head.grid(row=1,columnspan=2)
         self.label_1 = Label(self , text="Enter the Test Tweet")
         self.entry_1 = Entry(self,justify=CENTER)
-        self.label_1.grid(row=5 , sticky=E)
-        self.entry_1.grid(row=6 , columnspan=8,rowspan=2)
+        self.label_1.grid(row=10 , sticky=E)
+        self.entry_1.grid(row=11 , columnspan=8,rowspan=2)
 
         self.label_label = Label(self , text="Label Limit")
         self.entry_label = Entry(self,justify=RIGHT)
-        self.label_label.grid(row=1 , sticky=E)
-        self.entry_label.grid(row=1 , column=1)
+        self.label_label.grid(row=4 , sticky=E)
+        self.entry_label.grid(row=4 , column=1)
         self.entry_label.insert(END,'10000')
 
         self.label_un_label = Label(self , text="Un Label Limit")
         self.entry_un_label = Entry(self,justify=RIGHT)
-        self.label_un_label.grid(row=2 , sticky=E)
-        self.entry_un_label.grid(row=2 , column=1)
+        self.label_un_label.grid(row=5 , sticky=E)
+        self.entry_un_label.grid(row=5 , column=1)
         self.entry_un_label.insert(END,'10000')
 
         self.label_test = Label(self , text="Test Limit")
         self.entry_test = Entry(self,justify=RIGHT)
-        self.label_test.grid(row=3 , sticky=E)
-        self.entry_test.grid(row=3 , column=1)
+        self.label_test.grid(row=6 , sticky=E)
+        self.entry_test.grid(row=6 , column=1)
         self.entry_test.insert(END,'10000')
 
         self.train_btn = Button(self , text="Train Model" ,  fg="#a1dbcd", bg="#383a39", command=self._generate_model_)
-        self.train_btn.grid(row=4, column=1)
+        self.train_btn.grid(row=7, column=1)
         self.predict_btn = Button(self , text="Predict Tweet" ,  fg="#a1dbcd", bg="#383a39", command=self._predict_model_)
-        self.predict_btn.grid(row=8, columnspan=2)
+        self.predict_btn.grid(row=13, columnspan=2)
+        self._mode_state = StringVar()
+        self._mode_radio_self_training = Radiobutton(self , text="SelfTraining" ,
+                                                 value=0 , variable=self._mode_state)
+        self._mode_radio_co_training = Radiobutton(self , text="CoTraining" ,
+                                                  value=1 , variable=self._mode_state)
 
+        self._mode_radio_self_training.grid(row=2 , column=0 , pady=10)
+        self._mode_radio_co_training.grid(row=2 , column=1 , pady=10)
+        self._mode_state.set(0)
         self.model_generated = False
         self.pack()
 
@@ -55,13 +65,20 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        self.method = SelfTraining(label, un_label,test)
+        if self._mode_state.get():
+            self.method = CoTraining(label, un_label,test)
+        elif not self._mode_state.get():
+            self.method = SelfTraining(label, un_label,test)
 
     def _generate_model_(self):
-        self._get_configuration_()
-        self.model_generated = False
-        self.method.do_training()
-        self.model_generated = True
+        try:
+            self._get_configuration_()
+            self.model_generated = False
+            self.method.do_training()
+            self.model_generated = True
+        except AttributeError:
+            tm.showerror("Support Error","Not available for the Moment")
+
 
     def _predict_model_(self):
         tweet = self.entry_1.get()
@@ -74,6 +91,6 @@ class MainFrame(Frame):
             self._predict_model_()
 
 root = Tk()
-root.title("TSA with SSL, Ver 1.0.0.0")
+root.title("TSAwithSSL, v0.0.4.1")
 lf = MainFrame(root)
 root.mainloop()
