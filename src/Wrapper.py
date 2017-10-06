@@ -1,6 +1,8 @@
 import csv
 import warnings
 import time
+import numpy as np
+from sklearn import preprocessing as pr
 from Configuration import Configuration
 from Commons import Commons
 from DataStore import DataStore
@@ -66,7 +68,16 @@ class Wrapper:
                     un_label_count += 1
 
         return pos_dict , neg_dict , neu_dict , un_label_dict
-    
+
+    def convert_vector(self,vectors):
+        vectors_scaled = pr.scale(np.array(vectors))
+        scaler = pr.StandardScaler().fit(vectors)
+        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
+        normalizer = pr.Normalizer().fit(vectors_scaled)
+        vectors = vectors_normalized
+        vectors = vectors.tolist()
+        return vectors, scaler, normalizer
+
     def save_result(self, is_iteration, test_type):
         actual = []
         predicted = []
@@ -100,7 +111,7 @@ class Wrapper:
         if not is_iteration:
             saving_file.writerow(self.config.CSV_HEADER)
         saving_file.writerow(combined)
-        self.ds.CURRENT_ITERATION += 1
+        self.ds.CURRENT_ITERATION +=1
         temp_file.close()
         return
 
@@ -206,18 +217,18 @@ class Wrapper:
 
         return temp_pos_dict , temp_neg_dict , temp_neu_dict
 
-    def initial_run(self,test_type):
+    def initial_run(self):
         pos , neg , neu , un_label = self.load_initial_dictionaries()
         self.ds._update_initial_dict_(pos , neg , neu , un_label , False)
         self.get_vectors_and_labels()
-        self.make_model_save(False,test_type)
+        self.make_model(False)
         return
 
-    def iteration_run(self , is_iteration,test_type):
+    def iteration_run(self , is_iteration):
         pos , neg , neu = self.load_iteration_dict(is_iteration)
         self.ds._update_initial_dict_(pos , neg , neu , {} , True)
         self.get_vectors_and_labels_iteration()
-        self.make_model_save(True,test_type)
+        self.make_model(True)
         return
 
     def get_size(self, is_iteration):
@@ -240,19 +251,30 @@ class Wrapper:
         return weights
 
     def do_training(self):
+        time_list = [ time.time() ]
+        self.ds._set_current_iteration_(0)
+        print "Initial Training"
+        self.initial_run()
+        while self.ds._get_current_iteration_() < 11:
+            if self.ds._get_current_iteration_() == 0:
+                is_iteration = False
+            else:
+                is_iteration = True
+            print "Iteration " + str(self.ds._get_current_iteration_() + 1)
+            self.iteration_run(is_iteration)
+        print "Finished Training"
         for test_type in self.config.TEST_TYPES:
-            self.ds.CURRENT_ITERATION = 0
-            time_list = [time.time()]
-            self.initial_run(test_type)
-            while self.ds.CURRENT_ITERATION < 11:
-                if self.ds.CURRENT_ITERATION == 0:
+            print "Testing with " + test_type
+            self.ds._set_current_iteration_(0)
+            while self.ds._get_current_iteration_() < 11:
+                if self.ds._get_current_iteration_() == 0:
                     is_iteration = False
                 else:
                     is_iteration = True
-                self.iteration_run(is_iteration , test_type)
-
-            time_list.append(time.time())
-            print self.commons.temp_difference_cal(time_list)
+                self.save_result(is_iteration, test_type)
+        time_list.append(time.time())
+        print "Finished Testing"
+        print self.commons.temp_difference_cal(time_list)
 
     def predict(self , tweet , is_iteration):
         pass
@@ -269,7 +291,7 @@ class Wrapper:
     def get_vectors_and_labels_iteration(self):
         pass
 
-    def make_model_save(self , param , test_type):
+    def make_model(self , param):
         pass
 
     def map_tweet(self , line , mode , is_iteration):

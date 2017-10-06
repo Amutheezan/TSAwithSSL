@@ -42,7 +42,7 @@ class Configuration:
     PERCENTAGE_MINIMUM_CONF_CO = 0.9
     PERCENTAGE_MINIMUM_CONF_SELF = 0.5
 
-    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
+    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
 

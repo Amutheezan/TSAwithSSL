@@ -1,29 +1,29 @@
 class DataStore:
     def __init__(self):
-        # Initial Dictionaries for storing classified
-        # files for initial train and test data as follows
-        # POS_DICT, NEG_DICT, NEU_DICT, UNLABELED_DICT, TEST_DICT
+        # Dictionaries of training set both labeled and unlabeled
         self.POS_DICT = {}
         self.NEG_DICT = {}
         self.NEU_DICT = {}
         self.UNLABELED_DICT = {}
+        self.POS_DICT_ITER = {}
+        self.NEG_DICT_ITER = {}
+        self.NEU_DICT_ITER = {}
 
-        # Storing the vectors and labels, and there is another vector set for
-        # 2nd feature set
+        # Model and relevant parameters such as vector,labels, scalar and normalizer
         self.VECTORS = []
-        self.LABELS = []
         self.VECTORS_0 = []
+        self.LABELS = []
+        self.LABELS_0 = []
+        self.SCALAR = []
+        self.SCALAR_0 = []
+        self.NORMALIZER = []
+        self.NORMALIZER_0 = []
+        self.MODEL = []
+        self.MODEL_0 = []
 
-        # Model and relevant parameters such as scalar and normalizer
-        self.MODEL = None
-        self.SCALAR = None
-        self.NORMALIZER = None
+        self.CURRENT_ITERATION = 0
 
-        # Below are duplicate of co-training...
-        self.POS_DICT_ITER= {}
-        self.NEG_DICT_ITER= {}
-        self.NEU_DICT_ITER= {}
-
+        # Uni-gram dictionaries
         self.POS_UNI_GRAM = {}
         self.NEG_UNI_GRAM = {}
         self.NEU_UNI_GRAM = {}
@@ -40,16 +40,6 @@ class DataStore:
         self.NEG_POST_UNI_GRAM_ITER = {}
         self.NEU_POST_UNI_GRAM_ITER = {}
 
-        self.VECTORS_ITER = []
-        self.LABELS_ITER = []
-        self.VECTORS_ITER_0 = []
-
-        self.MODEL_0 = None
-        self.SCALAR_0 = None
-        self.NORMALIZER_0 = None
-
-        self.CURRENT_ITERATION = 0
-
     def _update_initial_dict_(self , pos , neg , neu , un_label , is_iteration):
         if is_iteration:
             self.POS_DICT_ITER= pos
@@ -61,21 +51,20 @@ class DataStore:
             self.NEU_DICT = neu
             self.UNLABELED_DICT = un_label
 
-    def _update_vectors_labels_(self , vector , labels , mode , is_iteration):
-        if is_iteration:
+    def _update_vectors_labels_scaler_normalizer_(self , vector , labels , scaler , normalizer , mode):
             if mode:
-                self.VECTORS_ITER= vector
+                self.VECTORS.append(vector)
+                self.SCALAR.append(scaler)
+                self.NORMALIZER.append(normalizer)
+                self.LABELS.append(labels)
             if not mode:
-                self.VECTORS_ITER_0 = vector
-            self.LABELS_ITER= labels
-        if not is_iteration:
-            if mode:
-                self.VECTORS = vector
-            if not mode:
-                self.VECTORS_0 = vector
-            self.LABELS = labels
+                self.VECTORS_0.append(vector)
+                self.SCALAR_0.append(scaler)
+                self.NORMALIZER_0.append(normalizer)
+                self.LABELS_0.append(labels)
 
-    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag , is_iteration):
+    def _update_uni_gram_(self , pos ,
+                          neg , neu , is_pos_tag , is_iteration):
         if is_iteration:
             if is_pos_tag:
                 self.POS_POST_UNI_GRAM_ITER= pos
@@ -95,20 +84,19 @@ class DataStore:
                 self.NEG_UNI_GRAM = neg
                 self.NEU_UNI_GRAM = neu
 
-    def _update_model_scaler_normalizer_(self , model , scaler , normalizer , mode):
+    def _update_model_(self , model , mode):
         if mode:
-            self.MODEL = model
-            self.SCALAR = scaler
-            self.NORMALIZER = normalizer
+            self.MODEL.append(model)
         if not mode:
-            self.MODEL_0 = model
-            self.SCALAR_0 = scaler
-            self.NORMALIZER_0 = normalizer
+            self.MODEL_0.append(model)
 
     def _increment_iteration_(self):
         self.CURRENT_ITERATION += 1
 
     def _get_current_iteration_(self):
         return self.CURRENT_ITERATION
+
+    def _set_current_iteration_(self , iteration):
+        self.CURRENT_ITERATION = iteration
 
 

@@ -1,7 +1,6 @@
 import warnings
 import time
-import numpy as np
-from sklearn import preprocessing as pr , svm
+from sklearn import svm
 from Wrapper import Wrapper
 warnings.filterwarnings('ignore')
 
@@ -32,7 +31,8 @@ class SelfTraining(Wrapper):
         neu_vec_0 , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT , 0 , self.config.LABEL_NEUTRAL , False)
         vectors_0 = pos_vec_0 + neg_vec_0 + neu_vec_0
         labels = pos_lab + neg_lab + neu_lab
-        self.ds._update_vectors_labels_(vectors_0 , labels , 0 , False)
+        vectors_0,scalar,normalizer = self.convert_vector(vectors_0)
+        self.ds._update_vectors_labels_scaler_normalizer_(vectors_0 , labels ,scalar,normalizer, 0)
 
         return
 
@@ -61,13 +61,14 @@ class SelfTraining(Wrapper):
         neu_vec_1 , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT_ITER, 0 , self.config.LABEL_NEUTRAL , True)
         vectors_1 = vectors_1 + pos_vec_1 + neg_vec_1 + neu_vec_1
         labels = labels + pos_lab + neg_lab + neu_lab
-        self.ds._update_vectors_labels_(vectors_1 , labels , 0 , True)
-
+        vectors_1,scalar,normalizer = self.convert_vector(vectors_1)
+        self.ds._update_vectors_labels_scaler_normalizer_(vectors_1 , labels ,scalar,normalizer , 0)
         return is_success
 
-    def make_model_save(self, is_iteration,test_type):
+    def make_model(self, is_iteration):
         self.generate_model(0, is_iteration)
-        self.save_result(is_iteration,test_type)
+        if is_iteration:
+            self.ds._increment_iteration_()
 
     def generate_model(self, mode, is_iteration):
         """
@@ -75,49 +76,35 @@ class SelfTraining(Wrapper):
         :param is_iteration: 
         :return: 
         """
-        vectors = []
-        labels = []
         class_weights = self.get_class_weight(self.get_size(is_iteration))
-        if is_iteration:
-            vectors = self.ds.VECTORS_ITER_0
-            labels = self.ds.LABELS_ITER
-        if not is_iteration:
-            vectors = self.ds.VECTORS_0
-            labels = self.ds.LABELS
         classifier_type = self.config.DEFAULT_CLASSIFIER
-        vectors_scaled = pr.scale(np.array(vectors))
-        scaler = pr.StandardScaler().fit(vectors)
-        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
-        normalizer = pr.Normalizer().fit(vectors_scaled)
-        vectors = vectors_normalized
-        vectors = vectors.tolist()
-
         if classifier_type == self.config.CLASSIFIER_SVM:
             kernel_function = self.config.DEFAULT_KERNEL_SELF
             c_parameter = self.config.DEFAULT_C_PARAMETER_SELF
             gamma = self.config.DEFAULT_GAMMA_SVM_SELF
             model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                             class_weight=class_weights , gamma=gamma , probability=True)
-            model.fit(vectors, labels)
         else:
             model = None
-        self.ds._update_model_scaler_normalizer_(model , scaler , normalizer , mode)
+        self.ds._update_model_(model , mode)
         return
 
     def transform_tweet(self , tweet , mode , is_iteration):
         z = self.map_tweet(tweet , mode , is_iteration)
-        z_scaled = self.ds.SCALAR_0.transform(z)
-        z = self.ds.NORMALIZER_0.transform([ z_scaled ])
-        z = z[ 0 ].tolist()
+        z_scaled = self.ds.SCALAR_0[self.ds._get_current_iteration_()].transform(z)
+        z = self.ds.NORMALIZER_0[self.ds._get_current_iteration_()].transform([ z_scaled ])
+        z = z[0].tolist()
         return z
 
     def predict(self , tweet , is_iteration):
         z_0 = self.transform_tweet(tweet , 0 , is_iteration)
-        predict_proba_0 = self.ds.MODEL_0.predict_proba([z_0]).tolist()[ 0 ]
+        temp_model_0 = self.ds.MODEL_0[self.ds._get_current_iteration_()]
+        temp_model_0 = temp_model_0.fit(self.ds.VECTORS_0[self.ds._get_current_iteration_()],self.ds.LABELS_0[self.ds._get_current_iteration_()])
+        predict_proba_0 = temp_model_0.predict_proba([z_0]).tolist()[ 0 ]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
         f_p_l = self.commons.get_labels(f_p , predict_proba_0)
-        predict_0 = self.ds.MODEL_0.predict([ z_0 ]).tolist()[ 0 ]
-
+        predict_0 = temp_model_0.predict([ z_0 ]).tolist()[ 0 ]
+        del temp_model_0
         if f_p - s_p < self.config.PERCENTAGE_MINIMUM_DIFF or\
                         f_p < self.config.PERCENTAGE_MINIMUM_CONF_SELF:
             return predict_0
@@ -126,10 +113,13 @@ class SelfTraining(Wrapper):
 
     def predict_for_iteration(self, tweet , last_label , is_iteration):
         z_0 = self.transform_tweet(tweet , 0 , is_iteration)
-        predict_proba_0 = self.ds.MODEL_0.predict_proba([z_0]).tolist()[ 0 ]
+        temp_model_0 = self.ds.MODEL_0[self.ds._get_current_iteration_()]
+        temp_model_0 = temp_model_0.fit(self.ds.VECTORS_0[self.ds._get_current_iteration_()],self.ds.LABELS_0[self.ds._get_current_iteration_()])
+        predict_proba_0 = temp_model_0.predict_proba([z_0]).tolist()[ 0 ]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
-        f_p_l = self.commons.get_labels(f_p , predict_proba_0)
 
+        f_p_l = self.commons.get_labels(f_p , predict_proba_0)
+        del temp_model_0
         if f_p - s_p < self.config.PERCENTAGE_MINIMUM_DIFF or \
                         f_p < self.config.PERCENTAGE_MINIMUM_CONF_SELF:
             return last_label
