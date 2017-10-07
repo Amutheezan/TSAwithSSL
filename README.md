@@ -10,23 +10,11 @@ You need to satisfy following pre-requisites
  
 Initially set the path to terminal to {project}/{src} which generally ../TSAwithSSL/src
 then do one of following command in terminal.
-   
-1. If you wish to Access Python Based Application
+
 
         python Visualizer.py
         
-2. If you wish to Access Web Based Application 
-
-        python Server.py 
-        
-NOTE: for this you need to install flask for python.using command
-        
-        pip install flask
-
- 
- Or otherwise if you feel to do customized, create a file inside {src}/ folder
- and name it as test.py, and add the following code.
- 
+OR go with below method
   
 ```python
 from SelfTraining import SelfTraining
@@ -46,4 +34,5 @@ method_new.do_training()
 and run the file using command prompt using,
             
                 python test.py
+                
 look into your terminal it displays the results.
