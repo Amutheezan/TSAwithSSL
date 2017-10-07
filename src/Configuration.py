@@ -27,6 +27,12 @@ class Configuration:
     NAME_POSITIVE = "positive"
     NAME_NEGATIVE = "negative"
     NAME_NEUTRAL = "neutral"
+    NAME_UN_LABELED = "un_labeled"
+
+    # Store content naming
+    NAME_VECTOR = "vector"
+    NAME_LABEL = "label"
+    NAME_CLASS_WEIGHT = "class_weight"
 
     # Training Set Ratio
     POS_RATIO = 0.3734

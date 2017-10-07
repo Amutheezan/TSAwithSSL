@@ -1,13 +1,14 @@
 import csv
-import warnings
+import json
 import time
-import numpy as np
-from sklearn import preprocessing as pr
-from Configuration import Configuration
+import warnings
+
 from Commons import Commons
+from Configuration import Configuration
 from DataStore import DataStore
 from Features import MicroBlog , Lexicon , WritingStyle , NGram
 from PreProcess import PreProcess
+
 warnings.filterwarnings('ignore')
 
 
@@ -28,6 +29,7 @@ class Wrapper:
         self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEG_RATIO)
         self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEU_RATIO)
         self.final_file = ''
+        self.store_file_name = ''
 
     def get_file_prefix(self):
         return "{0}_{1}_{2}_". \
@@ -69,14 +71,9 @@ class Wrapper:
 
         return pos_dict , neg_dict , neu_dict , un_label_dict
 
-    def convert_vector(self,vectors):
-        vectors_scaled = pr.scale(np.array(vectors))
-        scaler = pr.StandardScaler().fit(vectors)
-        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
-        normalizer = pr.Normalizer().fit(vectors_scaled)
-        vectors = vectors_normalized
-        vectors = vectors.tolist()
-        return vectors, scaler, normalizer
+    def convert_vector(self , vectors):
+
+        return vectors
 
     def save_result(self, is_iteration, test_type):
         actual = []
@@ -217,18 +214,70 @@ class Wrapper:
 
         return temp_pos_dict , temp_neg_dict , temp_neu_dict
 
+    def load_store(self , mode):
+        store_file_name = self.store_file_name + "{0}_{1}_{2}_{3}_model.json".format(str(self.LABEL_LIMIT) ,
+                                                                                     str(self.UN_LABEL_LIMIT) ,
+                                                                                     str(self.ds.CURRENT_ITERATION) ,
+                                                                                     str(mode))
+        store_file = open(store_file_name , "r+")
+        store = json.load(store_file)
+        labels_type = [ -2.0 , 0.0 , 2.0 ]
+        if mode:
+            self.ds.LABELS = store[ self.config.NAME_LABEL ]
+            self.ds.VECTORS = store[ self.config.NAME_VECTOR ]
+            self.ds.CLASS_WEIGHTS = {}
+            for label in labels_type:
+                self.ds.CLASS_WEIGHTS[ label ] = store[ self.config.NAME_CLASS_WEIGHT ].get(str(label))
+        if not mode:
+            self.ds.LABELS_0 = store[ self.config.NAME_LABEL ]
+            self.ds.VECTORS_0 = store[ self.config.NAME_VECTOR ]
+            self.ds.CLASS_WEIGHTS_0 = {}
+            for label in labels_type:
+                self.ds.CLASS_WEIGHTS_0[ label ] = store[ self.config.NAME_CLASS_WEIGHT ].get(str(label))
+        return
+
+    def save_store(self , mode):
+        store = ({})
+        if mode:
+            store[ self.config.NAME_LABEL ] = self.ds.LABELS
+            store[ self.config.NAME_VECTOR ] = self.ds.VECTORS
+            store[ self.config.NAME_CLASS_WEIGHT ] = self.ds.CLASS_WEIGHTS
+
+        if not mode:
+            store[ self.config.NAME_LABEL ] = self.ds.LABELS_0
+            store[ self.config.NAME_VECTOR ] = self.ds.VECTORS_0
+            store[ self.config.NAME_CLASS_WEIGHT ] = self.ds.CLASS_WEIGHTS_0
+
+        store_file_name = self.store_file_name + "{0}_{1}_{2}_{3}_model.json".format(str(self.LABEL_LIMIT) ,
+                                                                                     str(self.UN_LABEL_LIMIT) ,
+                                                                                     str(self.ds.CURRENT_ITERATION) ,
+                                                                                     str(mode))
+        store_file = open(store_file_name , "w")
+        json.dump(store , store_file)
+        store_file.close()
+        del store
+        self.clear_store(mode)
+
+    def clear_store(self , mode):
+        if mode:
+            del self.ds.VECTORS
+            del self.ds.LABELS
+            del self.ds.CLASS_WEIGHTS
+        if not mode:
+            del self.ds.VECTORS_0
+            del self.ds.LABELS_0
+            del self.ds.CLASS_WEIGHTS_0
+
     def initial_run(self):
         pos , neg , neu , un_label = self.load_initial_dictionaries()
         self.ds._update_initial_dict_(pos , neg , neu , un_label , False)
         self.get_vectors_and_labels()
-        self.make_model(False)
         return
 
     def iteration_run(self , is_iteration):
         pos , neg , neu = self.load_iteration_dict(is_iteration)
         self.ds._update_initial_dict_(pos , neg , neu , {} , True)
         self.get_vectors_and_labels_iteration()
-        self.make_model(True)
         return
 
     def get_size(self, is_iteration):
@@ -255,7 +304,7 @@ class Wrapper:
         self.ds._set_current_iteration_(0)
         print "Initial Training"
         self.initial_run()
-        while self.ds._get_current_iteration_() < 11:
+        while self.ds._get_current_iteration_() < 1:
             if self.ds._get_current_iteration_() == 0:
                 is_iteration = False
             else:
@@ -266,7 +315,7 @@ class Wrapper:
         for test_type in self.config.TEST_TYPES:
             print "Testing with " + test_type
             self.ds._set_current_iteration_(0)
-            while self.ds._get_current_iteration_() < 11:
+            while self.ds._get_current_iteration_() < 2:
                 if self.ds._get_current_iteration_() == 0:
                     is_iteration = False
                 else:
@@ -289,9 +338,6 @@ class Wrapper:
         pass
     
     def get_vectors_and_labels_iteration(self):
-        pass
-
-    def make_model(self , param):
         pass
 
     def map_tweet(self , line , mode , is_iteration):

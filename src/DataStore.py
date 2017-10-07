@@ -14,12 +14,8 @@ class DataStore:
         self.VECTORS_0 = []
         self.LABELS = []
         self.LABELS_0 = []
-        self.SCALAR = []
-        self.SCALAR_0 = []
-        self.NORMALIZER = []
-        self.NORMALIZER_0 = []
-        self.MODEL = []
-        self.MODEL_0 = []
+        self.CLASS_WEIGHTS = {}
+        self.CLASS_WEIGHTS_0 = {}
 
         self.CURRENT_ITERATION = 0
 
@@ -51,17 +47,15 @@ class DataStore:
             self.NEU_DICT = neu
             self.UNLABELED_DICT = un_label
 
-    def _update_vectors_labels_scaler_normalizer_(self , vector , labels , scaler , normalizer , mode):
-            if mode:
-                self.VECTORS.append(vector)
-                self.SCALAR.append(scaler)
-                self.NORMALIZER.append(normalizer)
-                self.LABELS.append(labels)
-            if not mode:
-                self.VECTORS_0.append(vector)
-                self.SCALAR_0.append(scaler)
-                self.NORMALIZER_0.append(normalizer)
-                self.LABELS_0.append(labels)
+    def _update_vectors_labels_class_weights_(self , vector , labels , class_weights , mode):
+        if mode:
+            self.VECTORS = vector
+            self.LABELS = labels
+            self.CLASS_WEIGHTS = class_weights
+        if not mode:
+            self.VECTORS_0 = vector
+            self.LABELS_0 = labels
+            self.CLASS_WEIGHTS_0 = class_weights
 
     def _update_uni_gram_(self , pos ,
                           neg , neu , is_pos_tag , is_iteration):
@@ -83,12 +77,6 @@ class DataStore:
                 self.POS_UNI_GRAM = pos
                 self.NEG_UNI_GRAM = neg
                 self.NEU_UNI_GRAM = neu
-
-    def _update_model_(self , model , mode):
-        if mode:
-            self.MODEL.append(model)
-        if not mode:
-            self.MODEL_0.append(model)
 
     def _increment_iteration_(self):
         self.CURRENT_ITERATION += 1

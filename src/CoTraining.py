@@ -1,8 +1,11 @@
-import warnings
 import time
+import warnings
+
 import numpy as np
 from sklearn import preprocessing as pr , svm
+
 from Wrapper import Wrapper
+
 warnings.filterwarnings('ignore')
 
 
@@ -10,13 +13,14 @@ class CoTraining(Wrapper):
     def __init__(self, label, un_label, test):
         Wrapper.__init__(self, label, un_label,test)
         self.final_file = '../dataset/analysed/co_training_' + self.get_file_prefix() + str(time.time())
+        self.store_file_name = '../dataset/models/co_training_'
 
     def map_tweet(self , tweet , mode , is_iteration):
         """
-        :param tweet: 
-        :param mode: 
-        :param is_iteration: 
-        :return: 
+        :param tweet:
+        :param mode:
+        :param is_iteration:
+        :return:
         """
         if mode:
             return self.map_tweet_feature_values(tweet)
@@ -37,22 +41,21 @@ class CoTraining(Wrapper):
         neu_vec , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT , 1 , self.config.LABEL_NEUTRAL , False)
         vectors = pos_vec + neg_vec + neu_vec
         labels = pos_lab + neg_lab + neu_lab
-        vectors , scalar , normalizer = self.convert_vector(vectors)
-        self.ds._update_vectors_labels_scaler_normalizer_(vectors , labels , scalar , normalizer , 1)
+        class_weights = self.get_class_weight(self.get_size(False))
+        self.ds._update_vectors_labels_class_weights_(vectors , labels , class_weights , 1)
+        self.save_store(1)
 
         pos_vec_0 , pos_lab = self.load_matrix_sub(self.ds.POS_DICT , 0 , self.config.LABEL_POSITIVE , False)
         neg_vec_0 , neg_lab = self.load_matrix_sub(self.ds.NEG_DICT , 0 , self.config.LABEL_NEGATIVE , False)
         neu_vec_0 , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT , 0 , self.config.LABEL_NEUTRAL , False)
         vectors_0 = pos_vec_0 + neg_vec_0 + neu_vec_0
-        vectors_0 , scalar , normalizer = self.convert_vector(vectors_0)
-        self.ds._update_vectors_labels_scaler_normalizer_(vectors_0 , labels , scalar , normalizer , 0)
+        class_weights = self.get_class_weight(self.get_size(False))
+        self.ds._update_vectors_labels_class_weights_(vectors_0 , labels , class_weights , 0)
+        self.save_store(0)
         return
 
     def get_vectors_and_labels_iteration(self):
-        """
-        obtain the vectors and labels for total self training and storing it at main store
-        :return:
-        """
+        self.ds._increment_iteration_()
         pos_t , pos_post_t = self.n_gram.generate_n_gram_dict(self.ds.POS_DICT_ITER , 1)
         neg_t , neg_post_t = self.n_gram.generate_n_gram_dict(self.ds.NEG_DICT_ITER , 1)
         neu_t , neu_post_t = self.n_gram.generate_n_gram_dict(self.ds.NEU_DICT_ITER , 1)
@@ -73,8 +76,9 @@ class CoTraining(Wrapper):
         neu_vec , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT_ITER, 1 , self.config.LABEL_NEUTRAL , True)
         vectors = vectors + pos_vec + neg_vec + neu_vec
         labels = labels + pos_lab + neg_lab + neu_lab
-        vectors , scalar , normalizer = self.convert_vector(vectors)
-        self.ds._update_vectors_labels_scaler_normalizer_(vectors , labels , scalar , normalizer , 1)
+        class_weights = self.get_class_weight(self.get_size(True))
+        self.ds._update_vectors_labels_class_weights_(vectors , labels , class_weights , 1)
+        self.save_store(1)
 
         pos_vec_0 , pos_lab = self.load_matrix_sub(self.ds.POS_DICT, 0 , self.config.LABEL_POSITIVE , True)
         neg_vec_0 , neg_lab = self.load_matrix_sub(self.ds.NEG_DICT , 0 , self.config.LABEL_NEGATIVE , True)
@@ -84,63 +88,72 @@ class CoTraining(Wrapper):
         neg_vec_0 , neg_lab = self.load_matrix_sub(self.ds.NEG_DICT_ITER, 0 , self.config.LABEL_NEGATIVE , True)
         neu_vec_0 , neu_lab = self.load_matrix_sub(self.ds.NEU_DICT_ITER, 0 , self.config.LABEL_NEUTRAL , True)
         vectors_0 = vectors_0 + pos_vec_0+ neg_vec_0 + neu_vec_0
-        vectors_0 , scalar , normalizer = self.convert_vector(vectors_0)
-        self.ds._update_vectors_labels_scaler_normalizer_(vectors_0 , labels , scalar , normalizer , 0)
-
+        class_weights = self.get_class_weight(self.get_size(True))
+        self.ds._update_vectors_labels_class_weights_(vectors_0 , labels , class_weights , 0)
+        self.save_store(0)
         return is_success
-
-    def make_model(self, is_iteration):
-        self.generate_model(0, is_iteration)
-        self.generate_model(1, is_iteration)
-        if is_iteration:
-            self.ds._increment_iteration_()
 
     def generate_model(self, mode, is_iteration):
         """
-        :param mode: 
-        :param is_iteration: 
-        :return: 
+        :param mode:
+        :param is_iteration:
+        :return:
         """
         c_parameter = 0.0
         gamma = 0.0
-        class_weights = self.get_class_weight(self.get_size(is_iteration))
+        vectors = [ ]
+        labels = [ ]
+        class_weights = {}
+        self.load_store(mode)
         if mode:
             c_parameter = self.config.DEFAULT_C_PARAMETER
             gamma = self.config.DEFAULT_GAMMA_SVM
+            vectors = self.ds.VECTORS
+            labels = self.ds.LABELS
+            class_weights = self.ds.CLASS_WEIGHTS
         if not mode:
             c_parameter = self.config.DEFAULT_C_PARAMETER_0
             gamma = self.config.DEFAULT_GAMMA_SVM_0
+            vectors = self.ds.VECTORS_0
+            labels = self.ds.LABELS_0
+            class_weights = self.ds.CLASS_WEIGHTS_0
+        self.clear_store(mode)
+        vectors_scaled = pr.scale(np.array(vectors))
+        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
+        vectors = vectors_normalized
+        vectors = vectors.tolist()
         classifier_type = self.config.DEFAULT_CLASSIFIER
         if classifier_type == self.config.CLASSIFIER_SVM:
             kernel_function = self.config.DEFAULT_KERNEL
             model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                             class_weight=class_weights , gamma=gamma , probability=True)
+            model.fit(vectors , labels)
         else:
             model = None
-        self.ds._update_model_(model , mode)
-        return
+        return model
 
     def transform_tweet(self , tweet , mode , is_iteration):
+        self.load_store(mode)
         z = self.map_tweet(tweet , mode , is_iteration)
+        vectors = [ ]
         if mode:
-            z_scaled = self.ds.SCALAR[ self.ds.CURRENT_ITERATION ].transform(z)
-            z = self.ds.NORMALIZER[ self.ds.CURRENT_ITERATION ].transform([ z_scaled ])
+            vectors = self.ds.VECTORS
         if not mode:
-            z_scaled = self.ds.SCALAR_0[ self.ds.CURRENT_ITERATION ].transform(z)
-            z = self.ds.NORMALIZER_0[ self.ds.CURRENT_ITERATION ].transform([ z_scaled ])
+            vectors = self.ds.VECTORS_0
+        vectors_scaled = pr.scale(np.array(vectors))
+        scalar = pr.StandardScaler().fit(vectors)
+        normalizer = pr.Normalizer().fit(vectors_scaled)
+        z_scaled = scalar.transform(z)
+        z = normalizer.transform([ z_scaled ])
+        self.clear_store(mode)
         z = z[ 0 ].tolist()
-
         return z
 
     def predict(self , tweet , is_iteration):
         z = self.transform_tweet(tweet , 1 , is_iteration)
         z_0 = self.transform_tweet(tweet , 0 , is_iteration)
-        temp_model_0 = self.ds.MODEL_0[ self.ds.CURRENT_ITERATION ]
-        temp_model_0 = temp_model_0.fit(self.ds.VECTORS_0[ self.ds.CURRENT_ITERATION ] ,
-                                        self.ds.LABELS_0[ self.ds.CURRENT_ITERATION ])
-        temp_model = self.ds.MODEL[ self.ds.CURRENT_ITERATION ]
-        temp_model = temp_model.fit(self.ds.VECTORS[ self.ds.CURRENT_ITERATION ] ,
-                                        self.ds.LABELS[ self.ds.CURRENT_ITERATION ])
+        temp_model = self.generate_model(1 , is_iteration)
+        temp_model_0 = self.generate_model(0 , is_iteration)
         predict_proba = temp_model.predict_proba([ z ]).tolist()[ 0 ]
         predict_proba_0 = temp_model_0.predict_proba([ z_0 ]).tolist()[ 0 ]
         sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)
@@ -171,12 +184,8 @@ class CoTraining(Wrapper):
     def predict_for_iteration(self, tweet , last_label , is_iteration):
         z = self.transform_tweet(tweet , 1 , is_iteration)
         z_0 = self.transform_tweet(tweet , 0 , is_iteration)
-        temp_model_0 = self.ds.MODEL_0[ self.ds.CURRENT_ITERATION ]
-        temp_model_0 = temp_model_0.fit(self.ds.VECTORS_0[ self.ds.CURRENT_ITERATION ] ,
-                                        self.ds.LABELS_0[ self.ds.CURRENT_ITERATION ])
-        temp_model = self.ds.MODEL[ self.ds.CURRENT_ITERATION ]
-        temp_model = temp_model.fit(self.ds.VECTORS[ self.ds.CURRENT_ITERATION ] ,
-                                        self.ds.LABELS[ self.ds.CURRENT_ITERATION ])
+        temp_model = self.generate_model(1 , is_iteration)
+        temp_model_0 = self.generate_model(0 , is_iteration)
         predict_proba = temp_model.predict_proba([ z ]).tolist()[ 0 ]
         predict_proba_0 = temp_model_0.predict_proba([ z_0 ]).tolist()[ 0 ]
         sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)

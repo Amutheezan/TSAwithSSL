@@ -1,7 +1,7 @@
-from tkinter import *
 import tkinter.messagebox as tm
+from tkinter import *
+
 from CoTraining import CoTraining
-from SelfTraining import SelfTraining
 
 
 class MainFrame(Frame):
@@ -40,15 +40,6 @@ class MainFrame(Frame):
         self.train_btn.grid(row=7, column=1)
         self.predict_btn = Button(self , text="Predict Tweet" ,  fg="#a1dbcd", bg="#383a39", command=self._predict_model_)
         self.predict_btn.grid(row=13, columnspan=2)
-        self._mode_state = StringVar()
-        self._mode_radio_self_training = Radiobutton(self , text="SelfTraining" ,
-                                                 value=0 , variable=self._mode_state)
-        self._mode_radio_co_training = Radiobutton(self , text="CoTraining" ,
-                                                  value=1 , variable=self._mode_state)
-
-        self._mode_radio_self_training.grid(row=2 , column=0 , pady=10)
-        self._mode_radio_co_training.grid(row=2 , column=1 , pady=10)
-        self._mode_state.set(0)
         self.model_generated = False
         self.pack()
 
@@ -65,20 +56,13 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        if self._mode_state.get():
-            self.method = CoTraining(label, un_label,test)
-        elif not self._mode_state.get():
-            self.method = SelfTraining(label, un_label,test)
+        self.method = CoTraining(label , un_label , test)
 
     def _generate_model_(self):
-        try:
-            self._get_configuration_()
-            self.model_generated = False
-            self.method.do_training()
-            self.model_generated = True
-        except AttributeError:
-            tm.showerror("Support Error","Not available for the Moment")
-
+        self._get_configuration_()
+        self.model_generated = False
+        self.method.do_training()
+        self.model_generated = True
 
     def _predict_model_(self):
         tweet = self.entry_1.get()
