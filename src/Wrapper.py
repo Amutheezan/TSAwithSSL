@@ -1,14 +1,11 @@
 import csv
-import json
-import time
 import warnings
-
-from Commons import Commons
+import time
 from Configuration import Configuration
+from Commons import Commons
 from DataStore import DataStore
 from Features import MicroBlog , Lexicon , WritingStyle , NGram
 from PreProcess import PreProcess
-
 warnings.filterwarnings('ignore')
 
 
@@ -29,7 +26,6 @@ class Wrapper:
         self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEG_RATIO)
         self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.config.NEU_RATIO)
         self.final_file = ''
-        self.store_file_name = ''
 
     def get_file_prefix(self):
         return "{0}_{1}_{2}_". \
@@ -70,11 +66,7 @@ class Wrapper:
                     un_label_count += 1
 
         return pos_dict , neg_dict , neu_dict , un_label_dict
-
-    def convert_vector(self , vectors):
-
-        return vectors
-
+    
     def save_result(self, is_iteration, test_type):
         actual = []
         predicted = []
@@ -108,7 +100,7 @@ class Wrapper:
         if not is_iteration:
             saving_file.writerow(self.config.CSV_HEADER)
         saving_file.writerow(combined)
-        self.ds.CURRENT_ITERATION +=1
+        self.ds.CURRENT_ITERATION += 1
         temp_file.close()
         return
 
@@ -214,70 +206,18 @@ class Wrapper:
 
         return temp_pos_dict , temp_neg_dict , temp_neu_dict
 
-    def load_store(self , mode):
-        store_file_name = self.store_file_name + "{0}_{1}_{2}_{3}_model.json".format(str(self.LABEL_LIMIT) ,
-                                                                                     str(self.UN_LABEL_LIMIT) ,
-                                                                                     str(self.ds.CURRENT_ITERATION) ,
-                                                                                     str(mode))
-        store_file = open(store_file_name , "r+")
-        store = json.load(store_file)
-        labels_type = [ -2.0 , 0.0 , 2.0 ]
-        if mode:
-            self.ds.LABELS = store[ self.config.NAME_LABEL ]
-            self.ds.VECTORS = store[ self.config.NAME_VECTOR ]
-            self.ds.CLASS_WEIGHTS = {}
-            for label in labels_type:
-                self.ds.CLASS_WEIGHTS[ label ] = store[ self.config.NAME_CLASS_WEIGHT ].get(str(label))
-        if not mode:
-            self.ds.LABELS_0 = store[ self.config.NAME_LABEL ]
-            self.ds.VECTORS_0 = store[ self.config.NAME_VECTOR ]
-            self.ds.CLASS_WEIGHTS_0 = {}
-            for label in labels_type:
-                self.ds.CLASS_WEIGHTS_0[ label ] = store[ self.config.NAME_CLASS_WEIGHT ].get(str(label))
-        return
-
-    def save_store(self , mode):
-        store = ({})
-        if mode:
-            store[ self.config.NAME_LABEL ] = self.ds.LABELS
-            store[ self.config.NAME_VECTOR ] = self.ds.VECTORS
-            store[ self.config.NAME_CLASS_WEIGHT ] = self.ds.CLASS_WEIGHTS
-
-        if not mode:
-            store[ self.config.NAME_LABEL ] = self.ds.LABELS_0
-            store[ self.config.NAME_VECTOR ] = self.ds.VECTORS_0
-            store[ self.config.NAME_CLASS_WEIGHT ] = self.ds.CLASS_WEIGHTS_0
-
-        store_file_name = self.store_file_name + "{0}_{1}_{2}_{3}_model.json".format(str(self.LABEL_LIMIT) ,
-                                                                                     str(self.UN_LABEL_LIMIT) ,
-                                                                                     str(self.ds.CURRENT_ITERATION) ,
-                                                                                     str(mode))
-        store_file = open(store_file_name , "w")
-        json.dump(store , store_file)
-        store_file.close()
-        del store
-        self.clear_store(mode)
-
-    def clear_store(self , mode):
-        if mode:
-            del self.ds.VECTORS
-            del self.ds.LABELS
-            del self.ds.CLASS_WEIGHTS
-        if not mode:
-            del self.ds.VECTORS_0
-            del self.ds.LABELS_0
-            del self.ds.CLASS_WEIGHTS_0
-
-    def initial_run(self):
+    def initial_run(self,test_type):
         pos , neg , neu , un_label = self.load_initial_dictionaries()
         self.ds._update_initial_dict_(pos , neg , neu , un_label , False)
         self.get_vectors_and_labels()
+        self.make_model_save(False,test_type)
         return
 
-    def iteration_run(self , is_iteration):
+    def iteration_run(self , is_iteration,test_type):
         pos , neg , neu = self.load_iteration_dict(is_iteration)
         self.ds._update_initial_dict_(pos , neg , neu , {} , True)
         self.get_vectors_and_labels_iteration()
+        self.make_model_save(True,test_type)
         return
 
     def get_size(self, is_iteration):
@@ -300,30 +240,19 @@ class Wrapper:
         return weights
 
     def do_training(self):
-        time_list = [ time.time() ]
-        self.ds._set_current_iteration_(0)
-        print "Initial Training"
-        self.initial_run()
-        while self.ds._get_current_iteration_() < 1:
-            if self.ds._get_current_iteration_() == 0:
-                is_iteration = False
-            else:
-                is_iteration = True
-            print "Iteration " + str(self.ds._get_current_iteration_() + 1)
-            self.iteration_run(is_iteration)
-        print "Finished Training"
         for test_type in self.config.TEST_TYPES:
-            print "Testing with " + test_type
-            self.ds._set_current_iteration_(0)
-            while self.ds._get_current_iteration_() < 2:
-                if self.ds._get_current_iteration_() == 0:
+            self.ds.CURRENT_ITERATION = 0
+            time_list = [time.time()]
+            self.initial_run(test_type)
+            while self.ds.CURRENT_ITERATION < 11:
+                if self.ds.CURRENT_ITERATION == 0:
                     is_iteration = False
                 else:
                     is_iteration = True
-                self.save_result(is_iteration, test_type)
-        time_list.append(time.time())
-        print "Finished Testing"
-        print self.commons.temp_difference_cal(time_list)
+                self.iteration_run(is_iteration , test_type)
+
+            time_list.append(time.time())
+            print self.commons.temp_difference_cal(time_list)
 
     def predict(self , tweet , is_iteration):
         pass
@@ -338,6 +267,9 @@ class Wrapper:
         pass
     
     def get_vectors_and_labels_iteration(self):
+        pass
+
+    def make_model_save(self , param , test_type):
         pass
 
     def map_tweet(self , line , mode , is_iteration):

@@ -27,12 +27,6 @@ class Configuration:
     NAME_POSITIVE = "positive"
     NAME_NEGATIVE = "negative"
     NAME_NEUTRAL = "neutral"
-    NAME_UN_LABELED = "un_labeled"
-
-    # Store content naming
-    NAME_VECTOR = "vector"
-    NAME_LABEL = "label"
-    NAME_CLASS_WEIGHT = "class_weight"
 
     # Training Set Ratio
     POS_RATIO = 0.3734
@@ -48,7 +42,7 @@ class Configuration:
     PERCENTAGE_MINIMUM_CONF_CO = 0.9
     PERCENTAGE_MINIMUM_CONF_SELF = 0.5
 
-    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
+    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "CODE" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
 
