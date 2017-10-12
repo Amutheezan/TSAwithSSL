@@ -11,8 +11,6 @@ class Configuration:
     KERNEL_RBF = "rbf"
 
     # Test type of SemEval 2013/2014
-    TEST_TYPE_LIVE_JOURNEL = "LiveJournal2014"
-    TEST_TYPE_SMS = "SMS2013"
     TEST_TYPE_TWITTER_2013 = "Twitter2013"
     TEST_TYPE_TWITTER_2014 = "Twitter2014"
     TEST_TYPE_TWITTER_SARCASM = "Twitter2014Sarcasm"
@@ -51,9 +49,8 @@ class Configuration:
         self._setup_()
 
     def _setup_(self):
-        self.TEST_TYPES = [self.TEST_TYPE_LIVE_JOURNEL,self.TEST_TYPE_TWITTER_2013,
-                           self.TEST_TYPE_TWITTER_2014,self.TEST_TYPE_TWITTER_SARCASM,
-                           self.TEST_TYPE_SMS]
+        self.TEST_TYPES = [self.TEST_TYPE_TWITTER_2013,
+                           self.TEST_TYPE_TWITTER_2014,self.TEST_TYPE_TWITTER_SARCASM]
 
         if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:
             self.DEFAULT_KERNEL_0 = self.KERNEL_RBF
