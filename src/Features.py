@@ -70,8 +70,9 @@ class MicroBlog:
 
 
 class Lexicon:
-    def __init__(self , ppros):
+    def __init__(self , ppros,config):
         self.ppros = ppros
+	self.config = config
         self.POS_LEXICON_FILE = "../resource/positive.txt"
         self.NEG_LEXICON_FILE = "../resource/negative.txt"
         self.AFFIN_FILE_96 = "../resource/afinn_96.txt"
@@ -192,7 +193,7 @@ class Lexicon:
                         score += 1
         return score
 
-    def get_afinn_99_score(self , tweet):
+    def get_afinn_96_score(self , tweet):
         p = 0.0
         nbr = 0
         for w in tweet.split():
@@ -299,7 +300,7 @@ class Lexicon:
         vector = [ ]
         preprocessed_tweet = self.ppros.pre_process_tweet(tweet)
         lexicon_score_gen = self.get_lexicon_score(preprocessed_tweet)
-        afinn_score_96 = self.get_afinn_99_score(preprocessed_tweet)
+        afinn_score_96 = self.get_afinn_96_score(preprocessed_tweet)
         afinn_score_111 = self.get_afinn_111_score(preprocessed_tweet)
         senti_140_score = self.get_senti140_score(preprocessed_tweet)
         n_r_c_score = self.get_NRC_score(preprocessed_tweet)
@@ -313,6 +314,33 @@ class Lexicon:
         vector.append(binliu_score)
         vector.append(sentiword_score)
         return vector
+
+    def _last_word_sentiment_(self,tweet):
+        words = self.ppros.pre_process_tweet(tweet).split()
+        last_word = words[len(words)-1]
+        lexicon_score_gen = self.get_lexicon_score(last_word)
+        afinn_score_96 = self.get_afinn_96_score(last_word)
+        afinn_score_111 = self.get_afinn_111_score(last_word)
+        senti_140_score = self.get_senti140_score(last_word)
+        n_r_c_score = self.get_NRC_score(last_word)
+        binliu_score = self.get_senti_word_net_score(last_word)
+        sentiword_score = self.get_binliu_score(last_word)
+
+        if lexicon_score_gen > 0 and afinn_score_96 > 0 and afinn_score_111 > 0 \
+            and senti_140_score > 0 and sentiword_score > 0 and n_r_c_score > 0\
+            and binliu_score > 0:
+            return self.config.LABEL_POSITIVE
+        elif lexicon_score_gen < 0 and afinn_score_96 < 0 and afinn_score_111 < 0 \
+            and senti_140_score < 0 and sentiword_score < 0 and n_r_c_score < 0\
+            and binliu_score < 0:
+            return self.config.LABEL_NEGATIVE
+        elif lexicon_score_gen == 0 and afinn_score_96 == 0 and afinn_score_111 == 0 \
+            and senti_140_score == 0 and sentiword_score == 0 and n_r_c_score == 0\
+            and binliu_score == 0:
+            return self.config.LABEL_NEUTRAL
+        else:
+            return self.config.UNLABELED
+
 
 
 class WritingStyle:

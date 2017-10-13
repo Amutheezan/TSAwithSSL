@@ -16,7 +16,7 @@ class Wrapper:
         self.pre_pros = PreProcess()
         self.commons = Commons(self.config)
         self.mb = MicroBlog()
-        self.lexicon = Lexicon(self.pre_pros)
+        self.lexicon = Lexicon(self.pre_pros,self.config)
         self.ws = WritingStyle()
         self.n_gram = NGram(self.commons , self.pre_pros)
         self.LABEL_LIMIT = min(self.config.LABEL_DATA_SET_SIZE , label)
