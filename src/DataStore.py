@@ -1,25 +1,20 @@
+from sklearn.externals import joblib
+
+
 class DataStore:
     def __init__(self):
-        # Initial Dictionaries for storing classified
-        # files for initial train and test data as follows
-        # POS_DICT, NEG_DICT, NEU_DICT, UNLABELED_DICT, TEST_DICT
-        self.POS_DICT = {}
-        self.NEG_DICT = {}
-        self.NEU_DICT = {}
-        self.UNLABELED_DICT = {}
+        self.TRAIN_DICT = {}
 
-        # Storing the vectors and labels, and there is another vector set for
-        # 2nd feature set
-        self.VECTORS = []
-        self.LABELS = []
-        self.VECTORS_0 = []
+        self.POS_INITIAL = 0
+        self.NEG_INITIAL = 0
+        self.NEU_INITIAL = 0
 
-        # Model and relevant parameters such as scalar and normalizer
-        self.MODEL = None
-        self.SCALAR = None
-        self.NORMALIZER = None
+        self.POS_SIZE = 0
+        self.NEG_SIZE = 0
+        self.NEU_SIZE = 0
 
-        # Below are duplicate of co-training...
+        self.CURRENT_ITERATION = 0
+
         self.POS_DICT_ITER= {}
         self.NEG_DICT_ITER= {}
         self.NEU_DICT_ITER= {}
@@ -28,82 +23,63 @@ class DataStore:
         self.NEG_UNI_GRAM = {}
         self.NEU_UNI_GRAM = {}
 
-        self.POS_POST_UNI_GRAM = {}
-        self.NEG_POST_UNI_GRAM = {}
-        self.NEU_POST_UNI_GRAM = {}
+    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag):
+        if is_pos_tag:
+            self.POS_POST_UNI_GRAM = pos
+            self.NEG_POST_UNI_GRAM = neg
+            self.NEU_POST_UNI_GRAM = neu
+        if not is_pos_tag:
+            self.POS_UNI_GRAM = pos
+            self.NEG_UNI_GRAM = neg
+            self.NEU_UNI_GRAM = neu
 
-        self.POS_UNI_GRAM_ITER= {}
-        self.NEG_UNI_GRAM_ITER= {}
-        self.NEU_UNI_GRAM_ITER= {}
-
-        self.POS_POST_UNI_GRAM_ITER = {}
-        self.NEG_POST_UNI_GRAM_ITER = {}
-        self.NEU_POST_UNI_GRAM_ITER = {}
-
-        self.VECTORS_ITER = []
-        self.LABELS_ITER = []
-        self.VECTORS_ITER_0 = []
-
-        self.MODEL_0 = None
-        self.SCALAR_0 = None
-        self.NORMALIZER_0 = None
-
-        self.CURRENT_ITERATION = 0
-
-    def _update_initial_dict_(self , pos , neg , neu , un_label , is_iteration):
-        if is_iteration:
-            self.POS_DICT_ITER= pos
-            self.NEG_DICT_ITER= neg
-            self.NEU_DICT_ITER= neu
-        if not is_iteration:
-            self.POS_DICT = pos
-            self.NEG_DICT = neg
-            self.NEU_DICT = neu
-            self.UNLABELED_DICT = un_label
-
-    def _update_vectors_labels_(self , vector , labels , mode , is_iteration):
-        if is_iteration:
+    def _update_vectors_labels_(self , vector , labels , mode):
             if mode:
-                self.VECTORS_ITER= vector
+                joblib.dump(vector, "../dataset/temp/vector")
+                joblib.dump(labels, "../dataset/temp/label")
             if not mode:
-                self.VECTORS_ITER_0 = vector
-            self.LABELS_ITER= labels
-        if not is_iteration:
-            if mode:
-                self.VECTORS = vector
-            if not mode:
-                self.VECTORS_0 = vector
-            self.LABELS = labels
+                joblib.dump(vector, "../dataset/temp/vector0")
+                joblib.dump(labels, "../dataset/temp/label0")
 
-    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag , is_iteration):
-        if is_iteration:
-            if is_pos_tag:
-                self.POS_POST_UNI_GRAM_ITER= pos
-                self.NEG_POST_UNI_GRAM_ITER= neg
-                self.NEU_POST_UNI_GRAM_ITER= neu
-            if not is_pos_tag:
-                self.POS_UNI_GRAM_ITER= pos
-                self.NEG_UNI_GRAM_ITER= neg
-                self.NEU_UNI_GRAM_ITER= neu
-        if not is_iteration:
-            if is_pos_tag:
-                self.POS_POST_UNI_GRAM = pos
-                self.NEG_POST_UNI_GRAM = neg
-                self.NEU_POST_UNI_GRAM = neu
-            if not is_pos_tag:
-                self.POS_UNI_GRAM = pos
-                self.NEG_UNI_GRAM = neg
-                self.NEU_UNI_GRAM = neu
+    def _get_vectors_(self, mode):
+        if mode:
+            return joblib.load("../dataset/temp/vector")
+        if not mode:
+            return joblib.load("../dataset/temp/vector0")
+
+    def _get_labels_(self , mode):
+        if mode:
+            return joblib.load("../dataset/temp/label")
+        if not mode:
+            return joblib.load("../dataset/temp/label0")
 
     def _update_model_scaler_normalizer_(self , model , scaler , normalizer , mode):
         if mode:
-            self.MODEL = model
-            self.SCALAR = scaler
-            self.NORMALIZER = normalizer
+            joblib.dump(model,"../dataset/temp/model")
+            joblib.dump(scaler,"../dataset/temp/scalar")
+            joblib.dump(normalizer,"../dataset/temp/normalizer")
         if not mode:
-            self.MODEL_0 = model
-            self.SCALAR_0 = scaler
-            self.NORMALIZER_0 = normalizer
+            joblib.dump(model,"../dataset/temp/model0")
+            joblib.dump(scaler,"../dataset/temp/scalar0")
+            joblib.dump(normalizer,"../dataset/temp/normalizer0")
+
+    def _get_scalar_(self,mode):
+        if mode:
+            return joblib.load("../dataset/temp/scalar")
+        if not mode:
+            return joblib.load("../dataset/temp/scalar0")
+
+    def _get_normalizer_(self , mode):
+        if mode:
+            return joblib.load("../dataset/temp/normalizer")
+        if not mode:
+            return joblib.load("../dataset/temp/normalizer0")
+
+    def _get_model_(self , mode):
+        if mode:
+            return joblib.load("../dataset/temp/model")
+        if not mode:
+            return joblib.load("../dataset/temp/model0")
 
     def _increment_iteration_(self):
         self.CURRENT_ITERATION += 1

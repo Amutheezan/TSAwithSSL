@@ -9,20 +9,11 @@ You need to satisfy following pre-requisites
 ## Guide to Use
  
 Initially set the path to terminal to {project}/{src} which generally ../TSAwithSSL/src
-then do one of following command in terminal.
+then do the following command in terminal which will give a basic python tkinter based GUI
+application.
    
-1. If you wish to Access Python Based Application
-
         python Visualizer.py
         
-2. If you wish to Access Web Based Application 
-
-        python Server.py 
-        
-NOTE: for this you need to install flask for python.using command
-        
-        pip install flask
-
  
  Or otherwise if you feel to do customized, create a file inside {src}/ folder
  and name it as test.py, and add the following code.

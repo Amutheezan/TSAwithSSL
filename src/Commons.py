@@ -48,17 +48,6 @@ class Commons:
             result = numerator / (denominator * 1.0)
             return round(result, 4)
 
-    def get_entropy(self,proba):
-        """
-        calculate entropy based formula -p(x)log(x)
-        :param proba: 
-        :return: 
-        """
-        if proba == 0:
-            return 0.0
-        else:
-            return round(-1.0 * (proba) * math.log(proba, 2), 2)
-
     def first_next_max(self,input_list):
         first = 0.0
         next = 0.0

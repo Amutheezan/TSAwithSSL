@@ -52,6 +52,8 @@ class Configuration:
         self.TEST_TYPES = [self.TEST_TYPE_TWITTER_2013,
                            self.TEST_TYPE_TWITTER_2014,self.TEST_TYPE_TWITTER_SARCASM]
 
+        self.LABEL_TYPES = [self.LABEL_POSITIVE, self.LABEL_NEGATIVE,self.LABEL_NEUTRAL]
+
         if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:
             self.DEFAULT_KERNEL_0 = self.KERNEL_RBF
             self.DEFAULT_C_PARAMETER_0 = 0.1

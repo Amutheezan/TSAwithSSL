@@ -98,5 +98,6 @@ ENV/
 # mkdocs documentation
 /site
 
-dataset/analysed/
 dataset/analysed/*
+dataset/temp/*
+

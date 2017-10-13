@@ -55,7 +55,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        self.method = CoTraining(label, un_label,test)
+        self.method = SelfTraining(label, un_label,test)
 
     def _generate_model_(self):
         self._get_configuration_()
@@ -67,13 +67,13 @@ class MainFrame(Frame):
         tweet = self.entry_1.get()
         if self.model_generated:
             tm.showinfo("Prediction","tweet is " + str(self.method.label_to_string(
-                self.method.predict(tweet,True))))
+                self.method.predict(tweet))))
         else:
             tm.showerror("Predict Error","No Models Available")
             self._generate_model_()
             self._predict_model_()
 
 root = Tk()
-root.title("TSA with SSL, Ver 1.0.0.0")
+root.title("TSAwithSSL, v0.1.0.0")
 lf = MainFrame(root)
 root.mainloop()

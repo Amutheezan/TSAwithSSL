@@ -424,11 +424,12 @@ class NGram:
                     temp_dict.update({temp: local_temp_value + 1})
         return temp_dict
 
-    def generate_n_gram_dict(self , file_dict , gram):
+    def generate_n_gram_dict(self , file_dict, polarity , gram):
         """
         this will return n-gram set for uni-gram,bi-gram and tri-gram, with frequency calculated
         for normal text and POS-tagged.
         :param file_dict:
+        :param polarity: 
         :param gram:
         :return: frequency dictionaries
         """
@@ -437,15 +438,17 @@ class NGram:
         keys = file_dict.keys()
         for line_key in keys:
             try:
-                line = file_dict.get(line_key)
-                words = line.split()
-                word_dict = self.create_dict(words , gram)
-                word_freq_dict , is_success = self.commons.dict_update(word_freq_dict , word_dict)
-                temp_postags = self.ppros.pos_tag_string(line).split()
-                if temp_postags != "":
-                    postags = temp_postags
-                    postag_dict = self.create_dict(postags , gram)
-                    postag_freq_dict , is_success = self.commons.dict_update(postag_freq_dict , postag_dict)
+                line_polarity = file_dict.get(line_key)[1]
+                if line_polarity == polarity:
+                    line = file_dict.get(line_key)[0]
+                    words = line.split()
+                    word_dict = self.create_dict(words , gram)
+                    word_freq_dict , is_success = self.commons.dict_update(word_freq_dict , word_dict)
+                    temp_postags = self.ppros.pos_tag_string(line).split()
+                    if temp_postags != "":
+                        postags = temp_postags
+                        postag_dict = self.create_dict(postags , gram)
+                        postag_freq_dict , is_success = self.commons.dict_update(postag_freq_dict , postag_dict)
             except IndexError:
                 print "Error"
         return word_freq_dict , postag_freq_dict
