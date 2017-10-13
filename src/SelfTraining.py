@@ -112,21 +112,18 @@ class SelfTraining(Wrapper):
         return z
 
     def predict(self , tweet , is_iteration):
-        prediction = self.lexicon._last_word_sentiment_(tweet)
-        if prediction == self.config.UNLABELED:
-		z_0 = self.transform_tweet(tweet , 0 , is_iteration)
-		predict_proba_0 = self.ds.MODEL_0.predict_proba([z_0]).tolist()[ 0 ]
-		f_p , s_p = self.commons.first_next_max(predict_proba_0)
-		f_p_l = self.commons.get_labels(f_p , predict_proba_0)
-		predict_0 = self.ds.MODEL_0.predict([ z_0 ]).tolist()[ 0 ]
+        z_0 = self.transform_tweet(tweet , 0 , is_iteration)
+        predict_proba_0 = self.ds.MODEL_0.predict_proba([z_0]).tolist()[ 0 ]
+        f_p , s_p = self.commons.first_next_max(predict_proba_0)
+        f_p_l = self.commons.get_labels(f_p , predict_proba_0)
+        predict_0 = self.ds.MODEL_0.predict([ z_0 ]).tolist()[ 0 ]
 
-		if f_p - s_p < self.config.PERCENTAGE_MINIMUM_DIFF or\
-		                f_p < self.config.PERCENTAGE_MINIMUM_CONF_SELF:
-		    return predict_0
-		else:
-		    return f_p_l
+        if f_p - s_p < self.config.PERCENTAGE_MINIMUM_DIFF or\
+                        f_p < self.config.PERCENTAGE_MINIMUM_CONF_SELF:
+            return predict_0
         else:
-            return prediction
+            return f_p_l
+
 
     def predict_for_iteration(self, tweet , last_label , is_iteration):
         z_0 = self.transform_tweet(tweet , 0 , is_iteration)
