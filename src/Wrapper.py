@@ -112,7 +112,6 @@ class Wrapper:
         if current_iteration == 0:
             saving_file.writerow(self.config.CSV_HEADER)
         saving_file.writerow(combined)
-        self.ds.CURRENT_ITERATION += 1
         temp_file.close()
         return
 
@@ -133,12 +132,6 @@ class Wrapper:
             return self.config.NAME_NEUTRAL
 
     def load_matrix_sub(self , process_dict , mode , label):
-        """
-        :param process_dict:
-        :param mode:
-        :param label:
-        :return:
-        """
         limit = self.LABEL_LIMIT
         if limit != 0:
             keys = process_dict.keys()
@@ -160,10 +153,6 @@ class Wrapper:
         return vectors , labels
 
     def map_tweet_n_gram_values(self , tweet):
-        """
-        :param tweet: 
-        :return: 
-        """
         vector = []
 
         preprocessed_tweet = self.pre_pros.pre_process_tweet(tweet)
@@ -205,10 +194,10 @@ class Wrapper:
                     elif current_label == self.config.LABEL_NEUTRAL:
                         self.ds.NEU_SIZE += 1
                     self.ds.TRAIN_DICT.update({key: [tweet , current_label, current_confidence, is_labeled ]})
+        self.ds._increment_iteration_()
         return
 
     def get_vectors_and_labels(self):
-
         pos , pos_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.config.LABEL_POSITIVE , 1)
         neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.config.LABEL_NEGATIVE , 1)
         neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.config.LABEL_NEUTRAL , 1)
@@ -223,7 +212,7 @@ class Wrapper:
                 vec , lab = self.load_matrix_sub(self.ds.TRAIN_DICT , mode , label)
                 vectors += vec
                 labels += lab
-            self.ds._update_vectors_labels_(vectors , labels , mode)
+            self.ds._dump_vectors_labels_(vectors , labels , mode)
 
         return
 
@@ -246,7 +235,7 @@ class Wrapper:
             model.fit(vectors, labels)
         else:
             model = None
-        self.ds._update_model_scaler_normalizer_(model , scaler , normalizer , mode)
+        self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode)
         return
 
     def make_model_save(self, test_type):
@@ -285,7 +274,7 @@ class Wrapper:
             time_list = [time.time()]
             self.load_training_dictionary()
             self.common_run(test_type)
-            while self.ds.CURRENT_ITERATION < 11:
+            while self.ds.CURRENT_ITERATION < 10:
                 self.load_iteration_dict()
                 self.common_run(test_type)
 
@@ -296,9 +285,6 @@ class Wrapper:
         pass
 
     def predict_for_iteration(self , tweet , last_label):
-        pass
-
-    def get_vectors_and_labels_iteration(self):
         pass
 
     def map_tweet(self , line , mode):

@@ -1,7 +1,16 @@
 from sklearn.externals import joblib
+import os
 
 
 class DataStore:
+    ANALYSED_DIRECTORY = "../dataset/analysed/"
+    TEMP_DIRECTORY = "../dataset/temp/"
+    VECTOR_TEMP_STORE = TEMP_DIRECTORY + "vector/"
+    LABEL_TEMP_STORE = TEMP_DIRECTORY + "label/"
+    MODEL_TEMP_STORE = TEMP_DIRECTORY + "model/"
+    SCALAR_TEMP_STORE = TEMP_DIRECTORY + "scalar/"
+    NORMALIZER_TEMP_STORE = TEMP_DIRECTORY + "normalizer/"
+
     def __init__(self):
         self.TRAIN_DICT = {}
 
@@ -15,71 +24,57 @@ class DataStore:
 
         self.CURRENT_ITERATION = 0
 
-        self.POS_DICT_ITER= {}
-        self.NEG_DICT_ITER= {}
-        self.NEU_DICT_ITER= {}
+        self.SUB_DIRECTORY = [self.VECTOR_TEMP_STORE,self.LABEL_TEMP_STORE,
+                              self.MODEL_TEMP_STORE,self.SCALAR_TEMP_STORE,
+                              self.NORMALIZER_TEMP_STORE]
+        self._create_directories_()
 
-        self.POS_UNI_GRAM = {}
-        self.NEG_UNI_GRAM = {}
-        self.NEU_UNI_GRAM = {}
+    def _create_directories_(self):
+        self._create_directory_(self.ANALYSED_DIRECTORY)
+        self._create_directory_(self.TEMP_DIRECTORY)
+        for directory in self.SUB_DIRECTORY:
+            self._create_directory_(directory)
 
-    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag):
-        if is_pos_tag:
-            self.POS_POST_UNI_GRAM = pos
-            self.NEG_POST_UNI_GRAM = neg
-            self.NEU_POST_UNI_GRAM = neu
-        if not is_pos_tag:
-            self.POS_UNI_GRAM = pos
-            self.NEG_UNI_GRAM = neg
-            self.NEU_UNI_GRAM = neu
+    def _create_mode_iteration_directories(self, mode):
+        for directory in self.SUB_DIRECTORY:
+            mode_directory = directory + "/" + str(mode)
+            iteration_directory = mode_directory + "/" + str(self._get_current_iteration_())
+            self._create_directory_(mode_directory)
+            self._create_directory_(iteration_directory)
 
-    def _update_vectors_labels_(self , vector , labels , mode):
-            if mode:
-                joblib.dump(vector, "../dataset/temp/vector")
-                joblib.dump(labels, "../dataset/temp/label")
-            if not mode:
-                joblib.dump(vector, "../dataset/temp/vector0")
-                joblib.dump(labels, "../dataset/temp/label0")
+    def _dump_vectors_labels_(self , vectors , labels , mode):
+        self._create_mode_iteration_directories(mode)
+        joblib.dump(vectors, self.VECTOR_TEMP_STORE + self._get_suffix_(mode))
+        joblib.dump(labels, self.LABEL_TEMP_STORE + self._get_suffix_(mode))
+
+    def _dump_model_scaler_normalizer_(self , model , scalar , normalizer , mode):
+        self._create_mode_iteration_directories(mode)
+        joblib.dump(model , self.MODEL_TEMP_STORE + self._get_suffix_(mode))
+        joblib.dump(scalar , self.SCALAR_TEMP_STORE + self._get_suffix_(mode))
+        joblib.dump(normalizer , self.NORMALIZER_TEMP_STORE + self._get_suffix_(mode))
 
     def _get_vectors_(self, mode):
-        if mode:
-            return joblib.load("../dataset/temp/vector")
-        if not mode:
-            return joblib.load("../dataset/temp/vector0")
+        return joblib.load(self.VECTOR_TEMP_STORE + self._get_suffix_(mode))
 
     def _get_labels_(self , mode):
-        if mode:
-            return joblib.load("../dataset/temp/label")
-        if not mode:
-            return joblib.load("../dataset/temp/label0")
-
-    def _update_model_scaler_normalizer_(self , model , scaler , normalizer , mode):
-        if mode:
-            joblib.dump(model,"../dataset/temp/model")
-            joblib.dump(scaler,"../dataset/temp/scalar")
-            joblib.dump(normalizer,"../dataset/temp/normalizer")
-        if not mode:
-            joblib.dump(model,"../dataset/temp/model0")
-            joblib.dump(scaler,"../dataset/temp/scalar0")
-            joblib.dump(normalizer,"../dataset/temp/normalizer0")
+        return joblib.load(self.LABEL_TEMP_STORE + self._get_suffix_(mode))
 
     def _get_scalar_(self,mode):
-        if mode:
-            return joblib.load("../dataset/temp/scalar")
-        if not mode:
-            return joblib.load("../dataset/temp/scalar0")
+        return joblib.load(self.SCALAR_TEMP_STORE + self._get_suffix_(mode))
 
     def _get_normalizer_(self , mode):
-        if mode:
-            return joblib.load("../dataset/temp/normalizer")
-        if not mode:
-            return joblib.load("../dataset/temp/normalizer0")
+        return joblib.load(self.NORMALIZER_TEMP_STORE + self._get_suffix_(mode))
 
     def _get_model_(self , mode):
-        if mode:
-            return joblib.load("../dataset/temp/model")
-        if not mode:
-            return joblib.load("../dataset/temp/model0")
+        return joblib.load(self.MODEL_TEMP_STORE + self._get_suffix_(mode))
+
+    def _get_suffix_(self,mode):
+        suffix = str(mode) + "/" + str(self._get_current_iteration_()) + "/store.plk"
+        return suffix
+
+    def _create_directory_(self,directory):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
     def _increment_iteration_(self):
         self.CURRENT_ITERATION += 1
@@ -87,4 +82,12 @@ class DataStore:
     def _get_current_iteration_(self):
         return self.CURRENT_ITERATION
 
-
+    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag):
+            if is_pos_tag:
+                self.POS_POST_UNI_GRAM = pos
+                self.NEG_POST_UNI_GRAM = neg
+                self.NEU_POST_UNI_GRAM = neu
+            if not is_pos_tag:
+                self.POS_UNI_GRAM = pos
+                self.NEG_UNI_GRAM = neg
+                self.NEU_UNI_GRAM = neu
