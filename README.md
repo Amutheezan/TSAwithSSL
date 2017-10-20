@@ -37,4 +37,5 @@ method_new.do_training()
 and run the file using command prompt using,
             
                 python test.py
+                
 look into your terminal it displays the results.

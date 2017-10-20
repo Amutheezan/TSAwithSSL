@@ -32,7 +32,7 @@ class SelfTraining(Wrapper):
 
     def predict_for_iteration(self, tweet , last_label):
         z_0 = self.transform_tweet(tweet , 0)
-        predict_proba_0 = self.ds._get_model_(0, self.config.NO_TOPIC).predict_proba([z_0]).tolist()[ 0 ]
+        predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[ 0 ]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
         f_p_l = self.commons.get_labels(f_p , predict_proba_0)
 

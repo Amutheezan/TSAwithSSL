@@ -47,16 +47,16 @@ class MainFrame(Frame):
         try:
             label = int(self.entry_label.get())
         except ValueError:
-            label = 100
+            label = 10
         try:
             un_label = int(self.entry_un_label.get())
         except ValueError:
-            un_label = 100
+            un_label = 10
         try:
             test = int(self.entry_test.get())
         except ValueError:
-            test = 100
-        self.method = TopicOriented(label, un_label,test)
+            test = 10
+        self.method = CoTraining(label, un_label, test)
 
     def _generate_model_(self):
         self._get_configuration_()

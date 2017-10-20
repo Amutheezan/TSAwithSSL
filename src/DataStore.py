@@ -1,5 +1,6 @@
 from sklearn.externals import joblib
 import os
+import shutil
 
 
 class DataStore:
@@ -41,6 +42,7 @@ class DataStore:
 
     def _create_directories_(self):
         self._create_directory_(self.ANALYSED_DIRECTORY)
+        self._delete_directory_(self.TEMP_DIRECTORY)
         self._create_directory_(self.TEMP_DIRECTORY)
         for directory in self.SUB_DIRECTORY:
             self._create_directory_(directory)
@@ -85,6 +87,10 @@ class DataStore:
     def _create_directory_(self,directory):
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+    def _delete_directory_(self,directory):
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
 
     def _increment_iteration_(self):
         self.CURRENT_ITERATION += 1

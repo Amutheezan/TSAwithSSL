@@ -133,23 +133,17 @@ class Wrapper:
 
     def load_matrix_sub(self , process_dict , mode , label):
         limit = self.LABEL_LIMIT
+        vectors = {}
+        labels = {}
         if limit != 0:
             keys = process_dict.keys()
             if len(keys) > 0:
-                vectors = {}
-                labels = {}
                 for key in keys:
                     if label == process_dict.get(key)[1]:
                         line = process_dict.get(key)[0]
                         z = self.map_tweet(line,mode)
-                        vectors.update({key:z})
-                        labels.update({key:labels})
-            else:
-                vectors = {}
-                labels = {}
-        else:
-            vectors = {}
-            labels = {}
+                        vectors.update({key : z})
+                        labels.update({key : label})
         return vectors , labels
 
     def map_tweet_n_gram_values(self , tweet):
@@ -215,13 +209,16 @@ class Wrapper:
             self.ds._dump_vectors_labels_(vectors , labels , mode)
         return
 
-    def get_vectors_and_labels(self,mode,topic):
+    def get_vectors_and_labels(self,mode, topic):
         full_vectors = self.ds._get_vectors_(mode)
-        full_labels = self.ds._get_vectors_(mode)
+        full_labels = self.ds._get_labels_(mode)
         selected_vectors = []
         selected_labels = []
         for key in full_vectors.keys():
             if self.ds.TRAIN_DICT.get(key)[4] == topic:
+                selected_vectors.append(full_vectors.get(key))
+                selected_labels.append(full_labels.get(key))
+            elif topic == self.config.NO_TOPIC:
                 selected_vectors.append(full_vectors.get(key))
                 selected_labels.append(full_labels.get(key))
         return selected_vectors, selected_labels
