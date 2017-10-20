@@ -1,5 +1,6 @@
-from SelfTraining import SelfTraining
 import time
+
+from SelfTraining import SelfTraining
 
 
 class TopicOriented(SelfTraining):
@@ -9,16 +10,23 @@ class TopicOriented(SelfTraining):
         self.final_file = '../dataset/analysed/topic_based_' + self.get_file_prefix() + str(time.time())
 
     def do_training(self):
+        test_type = self.config.TEST_TYPE_TWITTER_2013
         self.load_training_dictionary()
         self.update_with_topics()
-        for topic in self.ds.TOPICS.keys():
-            self.generate_vectors_and_labels()
-            self.make_model(topic)
-        print "Models making finished successfully"
+        self.generate_vectors_and_labels()
+        self.make_model(self.config.NO_TOPIC)
+        self.save_result(test_type)
+        while self.ds.CURRENT_ITERATION < 1:
+            self.load_iteration_dict()
+            for topic in self.ds.TOPICS.keys():
+                self.generate_vectors_and_labels()
+                self.make_model(topic)
+            self.save_result(test_type)
 
     def update_with_topics(self):
         train = self.ds.TRAIN_DICT.copy()
         original_topics = {}
+        final_topics = {}
         for key in train.keys():
             tweet , last_label , last_confidence , is_labeled , last_topic , last_value \
                 = train.get(key)
@@ -38,8 +46,13 @@ class TopicOriented(SelfTraining):
                                 del train[key]
                                 train.update({key: [ tweet , last_label , last_confidence ,
                                                      is_labeled , word , last_value ]})
+        for i in range(self.config.NO_OF_TOPICS):
+            maximum , key = self.commons.find_max_value_in_dict(original_topics)
+            del original_topics[key]
+            final_topics.update({key: maximum})
+        final_topics.update({self.config.NO_TOPIC : 0})
         self.ds.TRAIN_DICT = train
-        self.ds.TOPICS = original_topics
+        self.ds.TOPICS = final_topics
         return
 
     def pre_process_tweet_topic(self, tweet):
@@ -52,8 +65,16 @@ class TopicOriented(SelfTraining):
                 if topic[:len(topic)-4] in topics.keys():
                     local_value = topics.get(topic[:len(topic)-4])
                 topics.update({topic[:len(topic)-4]:1 + local_value})
-        for topic in topics.keys():
-            value = topics.get(topic)
-            if value < 3:
-                del topics[topic]
         return topics
+
+    def predict(self , tweet):
+        z_0 = self.transform_tweet(tweet , 0)
+        predict_proba_0 = {}
+        f_p = {}
+        for topic in self.ds.TOPICS.keys():
+            predict_proba_0[ topic ] = self.ds._get_model_(0 , topic).predict_proba([ z_0 ]).tolist()[ 0 ]
+            f_p[topic] = max(predict_proba_0[ topic ])
+        f_p_max , f_p_key = self.commons.find_max_value_in_dict(f_p)
+        f_p_max_label = self.commons.get_labels(f_p_max , predict_proba_0[ f_p_key ])
+
+        return f_p_max_label

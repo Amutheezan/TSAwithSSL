@@ -1,6 +1,7 @@
-from sklearn.externals import joblib
 import os
 import shutil
+
+from sklearn.externals import joblib
 
 
 class DataStore:
@@ -59,9 +60,11 @@ class DataStore:
         joblib.dump(vectors, self.VECTOR_TEMP_STORE + self._get_suffix_(mode))
         joblib.dump(labels, self.LABEL_TEMP_STORE + self._get_suffix_(mode))
 
-    def _dump_model_scaler_normalizer_(self , model , scalar , normalizer , mode):
+    def _dump_model_scaler_normalizer_(self , model , scalar , normalizer , mode , topic):
         self._create_mode_iteration_directories(mode)
-        joblib.dump(model , self.MODEL_TEMP_STORE + self._get_suffix_(mode))
+        directory = self.MODEL_TEMP_STORE + topic + "/"
+        self._create_directory_(directory)
+        joblib.dump(model , self.MODEL_TEMP_STORE + topic + "/" + self._get_suffix_(mode))
         joblib.dump(scalar , self.SCALAR_TEMP_STORE + self._get_suffix_(mode))
         joblib.dump(normalizer , self.NORMALIZER_TEMP_STORE + self._get_suffix_(mode))
 
@@ -77,8 +80,8 @@ class DataStore:
     def _get_normalizer_(self, mode):
         return joblib.load(self.NORMALIZER_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_model_(self, mode):
-        return joblib.load(self.MODEL_TEMP_STORE + self._get_suffix_(mode))
+    def _get_model_(self , mode , topic):
+        return joblib.load(self.MODEL_TEMP_STORE + topic + "/" + self._get_suffix_(mode))
 
     def _get_suffix_(self, mode):
         suffix = str(mode) + "/" + str(self._get_current_iteration_()) +"/store.plk"

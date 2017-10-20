@@ -1,5 +1,4 @@
-import math
-
+import operator
 
 class Commons:
 
@@ -59,7 +58,12 @@ class Commons:
                 next = element
         return first , next
 
-    def get_labels(self,p , prob):
+    def find_max_value_in_dict(self , dictionary):
+        maximum = max(dictionary.iteritems() , key=operator.itemgetter(1))[ 1 ]
+        key = max(dictionary.iteritems() , key=operator.itemgetter(1))[ 0 ]
+        return maximum , key
+
+    def get_labels(self , p , prob):
         l = self.config.UNLABELED
         if prob[ 0 ] == p:
             l = self.config.LABEL_NEGATIVE

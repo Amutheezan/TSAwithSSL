@@ -1,13 +1,16 @@
 import csv
-import warnings
 import time
-from Configuration import Configuration
+import warnings
+
+import numpy as np
+from sklearn import preprocessing as pr , svm
+
 from Commons import Commons
+from Configuration import Configuration
 from DataStore import DataStore
 from Features import MicroBlog , Lexicon , WritingStyle , NGram
 from PreProcess import PreProcess
-import numpy as np
-from sklearn import preprocessing as pr , svm
+
 warnings.filterwarnings('ignore')
 
 
@@ -223,7 +226,7 @@ class Wrapper:
                 selected_labels.append(full_labels.get(key))
         return selected_vectors, selected_labels
 
-    def generate_model(self, mode,c_parameter, gamma, topic):
+    def generate_model(self , mode , c_parameter , gamma , topic):
         class_weights = self.get_class_weight()
         vectors,labels = self.get_vectors_and_labels(mode, topic)
         classifier_type = self.config.DEFAULT_CLASSIFIER
@@ -243,7 +246,7 @@ class Wrapper:
         self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode)
         return
 
-    def make_model(self,topic):
+    def make_model(self , topic):
         for mode in range(self.NO_OF_MODELS):
             c_parameter = 0.0
             gamma = 0.0
@@ -256,7 +259,7 @@ class Wrapper:
             if not mode and self.NO_OF_MODELS == 1:
                 c_parameter = self.config.DEFAULT_C_PARAMETER_SELF
                 gamma = self.config.DEFAULT_GAMMA_SVM_SELF
-            self.generate_model(mode,c_parameter,gamma,topic)
+            self.generate_model(mode , c_parameter , gamma , topic)
 
     def transform_tweet(self , tweet , mode):
         z = self.map_tweet(tweet , mode)

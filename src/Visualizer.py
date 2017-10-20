@@ -1,7 +1,6 @@
-from tkinter import *
 import tkinter.messagebox as tm
-from CoTraining import CoTraining
-from SelfTraining import SelfTraining
+from tkinter import *
+
 from TopicOriented import TopicOriented
 
 
@@ -56,7 +55,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 10
-        self.method = CoTraining(label, un_label, test)
+        self.method = TopicOriented(label , un_label , test)
 
     def _generate_model_(self):
         self._get_configuration_()
