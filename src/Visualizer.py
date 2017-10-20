@@ -1,7 +1,6 @@
 import tkinter.messagebox as tm
 from tkinter import *
-
-from TopicOriented import TopicOriented
+from SelfTraining import SelfTraining
 
 
 class MainFrame(Frame):
@@ -55,7 +54,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 10
-        self.method = TopicOriented(label , un_label , test)
+        self.method = SelfTraining(label , un_label , test)
 
     def _generate_model_(self):
         self._get_configuration_()
