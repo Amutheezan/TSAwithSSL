@@ -17,13 +17,6 @@ class SelfTraining(Wrapper):
             vector.extend(self.map_tweet_n_gram_values(tweet))
         return vector
 
-    def transform_tweet(self , tweet , mode):
-        z = self.map_tweet(tweet , mode)
-        z_scaled = self.ds._get_scalar_(mode).transform(z)
-        z = self.ds._get_normalizer_(mode).transform([ z_scaled ])
-        z = z[0].tolist()
-        return z
-
     def predict(self , tweet):
         z_0 = self.transform_tweet(tweet , 0)
         predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[ 0 ]
@@ -39,7 +32,7 @@ class SelfTraining(Wrapper):
 
     def predict_for_iteration(self, tweet , last_label):
         z_0 = self.transform_tweet(tweet , 0)
-        predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[ 0 ]
+        predict_proba_0 = self.ds._get_model_(0, self.config.NO_TOPIC).predict_proba([z_0]).tolist()[ 0 ]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
         f_p_l = self.commons.get_labels(f_p , predict_proba_0)
 

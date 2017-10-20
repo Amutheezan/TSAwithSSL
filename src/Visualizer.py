@@ -2,6 +2,7 @@ from tkinter import *
 import tkinter.messagebox as tm
 from CoTraining import CoTraining
 from SelfTraining import SelfTraining
+from TopicOriented import TopicOriented
 
 
 class MainFrame(Frame):
@@ -55,7 +56,7 @@ class MainFrame(Frame):
             test = int(self.entry_test.get())
         except ValueError:
             test = 100
-        self.method = CoTraining(label, un_label,test)
+        self.method = TopicOriented(label, un_label,test)
 
     def _generate_model_(self):
         self._get_configuration_()
@@ -74,6 +75,6 @@ class MainFrame(Frame):
             self._predict_model_()
 
 root = Tk()
-root.title("TSAwithSSL, v0.1.0.0")
+root.title("TSAwithSSL, v0.1.1.0")
 lf = MainFrame(root)
 root.mainloop()

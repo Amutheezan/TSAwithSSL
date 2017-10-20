@@ -11,8 +11,10 @@ class DataStore:
     SCALAR_TEMP_STORE = TEMP_DIRECTORY + "scalar/"
     NORMALIZER_TEMP_STORE = TEMP_DIRECTORY + "normalizer/"
 
-    def __init__(self):
+    def __init__(self,config):
+        self.config = config
         self.TRAIN_DICT = {}
+        self.TOPICS = {}
 
         self.POS_INITIAL = 0
         self.NEG_INITIAL = 0
@@ -21,6 +23,14 @@ class DataStore:
         self.POS_SIZE = 0
         self.NEG_SIZE = 0
         self.NEU_SIZE = 0
+
+        self.POS_UNI_GRAM = {}
+        self.NEG_UNI_GRAM = {}
+        self.NEU_UNI_GRAM = {}
+
+        self.POS_POST_UNI_GRAM = {}
+        self.NEG_POST_UNI_GRAM = {}
+        self.NEU_POST_UNI_GRAM = {}
 
         self.CURRENT_ITERATION = 0
 
@@ -56,20 +66,20 @@ class DataStore:
     def _get_vectors_(self, mode):
         return joblib.load(self.VECTOR_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_labels_(self , mode):
+    def _get_labels_(self, mode):
         return joblib.load(self.LABEL_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_scalar_(self,mode):
+    def _get_scalar_(self, mode):
         return joblib.load(self.SCALAR_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_normalizer_(self , mode):
+    def _get_normalizer_(self, mode):
         return joblib.load(self.NORMALIZER_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_model_(self , mode):
+    def _get_model_(self, mode):
         return joblib.load(self.MODEL_TEMP_STORE + self._get_suffix_(mode))
 
-    def _get_suffix_(self,mode):
-        suffix = str(mode) + "/" + str(self._get_current_iteration_()) + "/store.plk"
+    def _get_suffix_(self, mode):
+        suffix = str(mode) + "/" + str(self._get_current_iteration_()) +"/store.plk"
         return suffix
 
     def _create_directory_(self,directory):

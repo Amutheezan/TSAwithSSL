@@ -396,8 +396,9 @@ class WritingStyle:
 
 
 class NGram:
-    def __init__(self , commons, ppros):
+    def __init__(self , commons, config, ppros):
         self.commons = commons
+        self.config = config
         self.ppros = ppros
 
     def create_dict(self , words , gram):
@@ -431,14 +432,17 @@ class NGram:
         :param file_dict:
         :param polarity: 
         :param gram:
+        :param topic:
         :return: frequency dictionaries
         """
         word_freq_dict = {}
         postag_freq_dict = {}
         keys = file_dict.keys()
         for line_key in keys:
+            is_selected = False
             try:
                 line_polarity = file_dict.get(line_key)[1]
+                line_topic = file_dict.get(line_key)[4]
                 if line_polarity == polarity:
                     line = file_dict.get(line_key)[0]
                     words = line.split()
@@ -450,7 +454,7 @@ class NGram:
                         postag_dict = self.create_dict(postags , gram)
                         postag_freq_dict , is_success = self.commons.dict_update(postag_freq_dict , postag_dict)
             except IndexError:
-                print "Error"
+                is_having_error = True
         return word_freq_dict , postag_freq_dict
 
     def score(self , tweet , p , n , ne , ngram):

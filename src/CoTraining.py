@@ -23,13 +23,6 @@ class CoTraining(Wrapper):
         if not mode:
             return self.map_tweet_n_gram_values(tweet)
 
-    def transform_tweet(self , tweet , mode):
-        z = self.map_tweet(tweet , mode)
-        z_scaled = self.ds._get_scalar_(mode).transform(z)
-        z = self.ds._get_normalizer_(0).transform([ z_scaled ])
-        z = z[ 0 ].tolist()
-        return z
-
     def predict(self , tweet):
         z = self.transform_tweet(tweet , 1)
         z_0 = self.transform_tweet(tweet , 0)

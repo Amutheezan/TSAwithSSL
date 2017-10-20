@@ -15,6 +15,8 @@ class Configuration:
     TEST_TYPE_TWITTER_2014 = "Twitter2014"
     TEST_TYPE_TWITTER_SARCASM = "Twitter2014Sarcasm"
 
+    NO_TOPIC = "###NO###TOPIC###"
+
     # Label float values
     LABEL_POSITIVE = 2.0
     LABEL_NEGATIVE = -2.0
