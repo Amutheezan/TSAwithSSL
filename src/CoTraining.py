@@ -24,10 +24,10 @@ class CoTraining(Wrapper):
             return self.map_tweet_n_gram_values(tweet)
 
     def predict(self , tweet):
-        z = self.transform_tweet(tweet , 1)
-        z_0 = self.transform_tweet(tweet , 0)
-        predict_proba = self.ds._get_model_(1,self.config.NO_TOPIC).predict_proba([ z ]).tolist()[ 0 ]
-        predict_proba_0 = self.ds._get_model_(0,self.config.NO_TOPIC).predict_proba([ z_0 ]).tolist()[ 0 ]
+        z = self.transform_tweet(tweet , 1,self.config.NO_TOPIC)
+        z_0 = self.transform_tweet(tweet , 0,self.config.NO_TOPIC)
+        predict_proba = self.ds._get_model_(1, self.config.NO_TOPIC).predict_proba([ z ]).tolist()[ 0 ]
+        predict_proba_0 = self.ds._get_model_(0, self.config.NO_TOPIC).predict_proba([ z_0 ]).tolist()[ 0 ]
         sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)
         f_p , s_p = self.commons.first_next_max(sum_predict_proba)
         f_p_l = self.commons.get_labels(f_p , sum_predict_proba)
@@ -53,8 +53,8 @@ class CoTraining(Wrapper):
                 return f_p_l
 
     def predict_for_iteration(self, tweet , last_label):
-        z = self.transform_tweet(tweet , 1)
-        z_0 = self.transform_tweet(tweet , 0)
+        z = self.transform_tweet(tweet , 1,self.config.NO_TOPIC)
+        z_0 = self.transform_tweet(tweet , 0,self.config.NO_TOPIC)
         predict_proba = self.ds._get_model_(1,self.config.NO_TOPIC).predict_proba([z]).tolist()[ 0 ]
         predict_proba_0 = self.ds._get_model_(0,self.config.NO_TOPIC).predict_proba([z_0]).tolist()[ 0 ]
         sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)

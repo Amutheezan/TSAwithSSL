@@ -73,6 +73,6 @@ class MainFrame(Frame):
             self._predict_model_()
 
 root = Tk()
-root.title("TSAwithSSL, v0.1.1.0")
+root.title("TSAwithSSL, v0.1.2.0")
 lf = MainFrame(root)
 root.mainloop()

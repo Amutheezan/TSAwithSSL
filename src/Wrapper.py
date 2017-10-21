@@ -243,7 +243,7 @@ class Wrapper:
             model.fit(vectors, labels)
         else:
             model = None
-        self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode)
+        self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode, topic)
         return
 
     def make_model(self , topic):
@@ -261,10 +261,10 @@ class Wrapper:
                 gamma = self.config.DEFAULT_GAMMA_SVM_SELF
             self.generate_model(mode , c_parameter , gamma , topic)
 
-    def transform_tweet(self , tweet , mode):
+    def transform_tweet(self , tweet , mode, topic):
         z = self.map_tweet(tweet , mode)
-        z_scaled = self.ds._get_scalar_(mode).transform(z)
-        z = self.ds._get_normalizer_(mode).transform([ z_scaled ])
+        z_scaled = self.ds._get_scalar_(mode, topic).transform(z)
+        z = self.ds._get_normalizer_(mode,topic).transform([ z_scaled ])
         z = z[0].tolist()
         return z
 

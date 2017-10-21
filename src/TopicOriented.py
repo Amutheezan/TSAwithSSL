@@ -68,10 +68,10 @@ class TopicOriented(SelfTraining):
         return topics
 
     def predict(self , tweet):
-        z_0 = self.transform_tweet(tweet , 0)
         predict_proba_0 = {}
         f_p = {}
         for topic in self.ds.TOPICS.keys():
+            z_0 = self.transform_tweet(tweet , 0, topic)
             predict_proba_0[ topic ] = self.ds._get_model_(0 , topic).predict_proba([ z_0 ]).tolist()[ 0 ]
             f_p[topic] = max(predict_proba_0[ topic ])
         f_p_max , f_p_key = self.commons.find_max_value_in_dict(f_p)
