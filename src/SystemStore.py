@@ -59,14 +59,14 @@ class Constants:
     TEST_DATA_SET_SIZE = 8987
 
     # training type
-    SELF_TRAINING_TYPE = "st"
-    CO_TRAINING_TYPE = "ct"
-    TOPIC_BASED_TRAINING_TYPE = "tb"
+    SELF_TRAINING_TYPE = "Self-Training"
+    CO_TRAINING_TYPE = "Co-Training"
+    TOPIC_BASED_TRAINING_TYPE = "Topic-Based"
 
     # Constants relevant at predicting
     PERCENTAGE_MINIMUM_DIFF = 0.1
     PERCENTAGE_MINIMUM_CONF_CO = 0.9
-    PERCENTAGE_MINIMUM_CONF_SELF = 0.5
+    PERCENTAGE_MINIMUM_CONF_SELF = 0.8
 
     CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
@@ -77,9 +77,10 @@ class Constants:
         self._setup_()
 
     def _setup_(self):
+        self.TRAINING_TYPES = [self.SELF_TRAINING_TYPE,
+                             self.CO_TRAINING_TYPE, self.TOPIC_BASED_TRAINING_TYPE]
         self.TEST_TYPES = [self.TEST_TYPE_TWITTER_2013,
                            self.TEST_TYPE_TWITTER_2014,self.TEST_TYPE_TWITTER_SARCASM]
-
         self.LABEL_TYPES = [self.LABEL_POSITIVE, self.LABEL_NEGATIVE,self.LABEL_NEUTRAL]
 
         if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:

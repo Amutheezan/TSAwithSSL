@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 
 class Wrapper:
-    def __init__(self , label , un_label , test, iteration):
+    def __init__(self , label , un_label , test, iteration, test_type):
         self.cons = Constants()
         self.pre_pros = PreProcess()
         self.mb = MicroBlog()
@@ -29,6 +29,7 @@ class Wrapper:
         self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.POS_RATIO)
         self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEG_RATIO)
         self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEU_RATIO)
+        self.TEST_TYPE = test_type
         self.NO_OF_MODELS = 0
         self.TRAINING_TYPE = ''
         self.final_file = ''
@@ -305,17 +306,16 @@ class Wrapper:
         return weights
 
     def do_training(self):
-        for test_type in self.cons.TEST_TYPES:
-            self.ds.CURRENT_ITERATION = 0
-            time_list = [time.time()]
-            self.load_training_dictionary()
-            self.common_run(test_type)
-            while self.ds.CURRENT_ITERATION < 10:
-                self.load_iteration_dict()
-                self.common_run(test_type)
+        self.ds.CURRENT_ITERATION = 0
+        time_list = [time.time()]
+        self.load_training_dictionary()
+        self.common_run(self.TEST_TYPE)
+        while self.ds.CURRENT_ITERATION < 10:
+            self.load_iteration_dict()
+            self.common_run(self.TEST_TYPE)
 
-            time_list.append(time.time())
-            print self.commons.temp_difference_cal(time_list)
+        time_list.append(time.time())
+        print self.commons.temp_difference_cal(time_list)
 
     def predict(self , tweet):
         pass

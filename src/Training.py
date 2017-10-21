@@ -5,8 +5,8 @@ warnings.filterwarnings('ignore')
 
 
 class SelfTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration):
-        Wrapper.__init__(self, label, un_label, test, iteration)
+    def __init__(self, label, un_label, test, iteration, test_type):
+        Wrapper.__init__(self, label, un_label, test, iteration, test_type)
         self.TRAINING_TYPE = self.cons.SELF_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/self_training_' + self.get_file_prefix() + str(time.time())
@@ -45,8 +45,8 @@ class SelfTraining(Wrapper):
 
 
 class CoTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration):
-        Wrapper.__init__(self, label, un_label, test, iteration)
+    def __init__(self, label, un_label, test, iteration, test_type):
+        Wrapper.__init__(self, label, un_label, test, iteration, test_type)
         self.TRAINING_TYPE = self.cons.CO_TRAINING_TYPE
         self.NO_OF_MODELS = 2
         self.final_file = '../dataset/analysed/co_training_' + self.get_file_prefix() + str(time.time())
@@ -113,8 +113,8 @@ class CoTraining(Wrapper):
 
 
 class TopicOriented(SelfTraining):
-    def __init__(self, label, un_label, test, iteration):
-        SelfTraining.__init__(self, label, un_label, test, iteration)
+    def __init__(self, label, un_label, test, iteration, test_type):
+        SelfTraining.__init__(self, label, un_label, test, iteration, test_type)
         self.TRAINING_TYPE = self.cons.TOPIC_BASED_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/topic_based_' + self.get_file_prefix() + str(time.time())
