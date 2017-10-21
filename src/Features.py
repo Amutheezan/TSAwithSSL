@@ -70,9 +70,9 @@ class MicroBlog:
 
 
 class Lexicon:
-    def __init__(self , ppros,config):
+    def __init__(self , ppros, cons):
         self.ppros = ppros
-	self.config = config
+        self.cons = cons
         self.POS_LEXICON_FILE = "../resource/positive.txt"
         self.NEG_LEXICON_FILE = "../resource/negative.txt"
         self.AFFIN_FILE_96 = "../resource/afinn_96.txt"
@@ -329,18 +329,17 @@ class Lexicon:
         if lexicon_score_gen > 0 and afinn_score_96 > 0 and afinn_score_111 > 0 \
             and senti_140_score > 0 and sentiword_score > 0 and n_r_c_score > 0\
             and binliu_score > 0:
-            return self.config.LABEL_POSITIVE
+            return self.cons.LABEL_POSITIVE
         elif lexicon_score_gen < 0 and afinn_score_96 < 0 and afinn_score_111 < 0 \
             and senti_140_score < 0 and sentiword_score < 0 and n_r_c_score < 0\
             and binliu_score < 0:
-            return self.config.LABEL_NEGATIVE
+            return self.cons.LABEL_NEGATIVE
         elif lexicon_score_gen == 0 and afinn_score_96 == 0 and afinn_score_111 == 0 \
             and senti_140_score == 0 and sentiword_score == 0 and n_r_c_score == 0\
             and binliu_score == 0:
-            return self.config.LABEL_NEUTRAL
+            return self.cons.LABEL_NEUTRAL
         else:
-            return self.config.UNLABELED
-
+            return self.cons.UNLABELED
 
 
 class WritingStyle:
@@ -396,18 +395,12 @@ class WritingStyle:
 
 
 class NGram:
-    def __init__(self , commons, config, ppros):
+    def __init__(self , commons, cons, ppros):
         self.commons = commons
-        self.config = config
+        self.cons = cons
         self.ppros = ppros
 
     def create_dict(self , words , gram):
-        """
-        This is to obtain the create_dict of word of particular line
-        :param words: 
-        :param gram: 
-        :return: give a create_dict of word(s) with proper format based generate_n_gram_dict values such as 1,2,3
-        """
         temp_dict = {}
         for i in range(len(words) - gram):
             if not words[ i:i + gram ] is "":
@@ -426,15 +419,6 @@ class NGram:
         return temp_dict
 
     def generate_n_gram_dict(self , file_dict, polarity , gram):
-        """
-        this will return n-gram set for uni-gram,bi-gram and tri-gram, with frequency calculated
-        for normal text and POS-tagged.
-        :param file_dict:
-        :param polarity: 
-        :param gram:
-        :param topic:
-        :return: frequency dictionaries
-        """
         word_freq_dict = {}
         postag_freq_dict = {}
         keys = file_dict.keys()
@@ -442,31 +426,21 @@ class NGram:
             is_selected = False
             try:
                 line_polarity = file_dict.get(line_key)[1]
-                line_topic = file_dict.get(line_key)[4]
                 if line_polarity == polarity:
                     line = file_dict.get(line_key)[0]
                     words = line.split()
                     word_dict = self.create_dict(words , gram)
-                    word_freq_dict , is_success = self.commons.dict_update(word_freq_dict , word_dict)
+                    word_freq_dict = self.commons.dict_update(word_freq_dict , word_dict)
                     temp_postags = self.ppros.pos_tag_string(line).split()
                     if temp_postags != "":
                         postags = temp_postags
                         postag_dict = self.create_dict(postags , gram)
-                        postag_freq_dict , is_success = self.commons.dict_update(postag_freq_dict , postag_dict)
+                        postag_freq_dict = self.commons.dict_update(postag_freq_dict , postag_dict)
             except IndexError:
                 is_having_error = True
         return word_freq_dict , postag_freq_dict
 
     def score(self , tweet , p , n , ne , ngram):
-        """
-        This will find individual score of each word with respect to its polarity
-        :param tweet: 
-        :param p: 
-        :param n: 
-        :param ne: 
-        :param ngram: 
-        :return: return positive, negative, and neutral score
-        """
         pos = 0
         neg = 0
         neu = 0
@@ -485,12 +459,6 @@ class NGram:
         return [ pos , neg , neu ]
 
     def get_count(self , gram , pol):
-        """
-        This will count the positive,negative, and neutral count based on relevant dictionary present
-        :param gram: 
-        :param pol: 
-        :return: return the availability of particular generate_n_gram_dict
-        """
         count = 0.0
         try:
             temp = float(pol.get(gram))

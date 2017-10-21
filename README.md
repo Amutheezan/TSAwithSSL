@@ -6,36 +6,33 @@ You need to satisfy following pre-requisites
  2. Scikit-Learn 
  3. NLTK
  
-## Guide to Use
- 
-Initially set the path to terminal to {project}/{src} which generally ../TSAwithSSL/src
-then do the following command in terminal which will give a basic python tkinter based GUI
-application.
-   
-        python Visualizer.py
-        
- 
- Or otherwise if you feel to do customized, create a file inside {src}/ folder
- and name it as test.py, and add the following code.
- 
+## Guide
+1. Clone the repo
+
+        git clone https://github.com/TSAwithSSL/TSAwithSSL.git
+    
+2. Go to repository, and go to src folder and type the following 
+    commands
+    
+        cd ..{REPOSITORY}/src
+        python Visualaizer.py
   
-```python
-from SelfTraining import SelfTraining
-method_new = SelfTraining(label,unlabel,test)
-# You can fill the label,unlabel and test with 
-# any possible integer values greater than 100
-method_new.do_training()
+3. Then you will get a GUI (which is courrently in development) it is default set to self-training
+you can modify it to co-training as well as topic based by replace line 67 in Visualizer.py
+        
+        ```python
+        self.method = SelfTraining(label, un_label, test, iteration)
+        ```
+        
+as 
 
-or
+        ```python
+        self.method = CoTraining(label , un_label , test, iteration)
+        ```
+for doing co-training.
 
-from CoTraining import CoTraining
-method_new = CoTraining(label,unlabel,test)
-# You can fill the label,unlabel and test with 
-# any possible integer values greater than 100
-method_new.do_training()
-```
-and run the file using command prompt using,
-            
-                python test.py
-                
-look into your terminal it displays the results.
+and as 
+
+        ```python
+        self.method = TopicOriented(label , un_label , test, iteration)
+        ```
