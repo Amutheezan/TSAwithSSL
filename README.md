@@ -19,7 +19,15 @@ cd ..{REPOSITORY}/src
 python Visualizer.py
 ```
   
-3. Then you will get a GUI (which is courrently in development). In GUI we can 
-specify the values for label, un label, test, iteration, training type and test 
-type, then finally do training.
-we can also test the tweet once the final model generated.
+3. You can specify the values for following
+    1.  Label Limit
+    2.  Un Label Limit
+    3.  Test Limit
+    4.  No of Iteration
+    5.  Training Type
+    6.  Test Data set
+    7.  Confidence 
+    8.  Confidence Difference
+    
+    and click the button for make model
+    in addition, you can also predic the tweet once the model generated.

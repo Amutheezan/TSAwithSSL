@@ -13,7 +13,9 @@ warnings.filterwarnings('ignore')
 
 
 class Wrapper:
-    def __init__(self , label , un_label , test, iteration, test_type):
+    def __init__(self , label , un_label ,
+                 test, iteration, test_type,
+                 confidence, confidence_diff):
         self.cons = Constants()
         self.pre_pros = PreProcess()
         self.mb = MicroBlog()
@@ -30,6 +32,8 @@ class Wrapper:
         self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEG_RATIO)
         self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEU_RATIO)
         self.TEST_TYPE = test_type
+        self.CONFIDENCE = float(confidence)
+        self.CONFIDENCE_DIFF = float(confidence_diff)
         self.NO_OF_MODELS = 0
         self.TRAINING_TYPE = ''
         self.final_file = ''

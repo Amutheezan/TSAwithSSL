@@ -63,11 +63,6 @@ class Constants:
     CO_TRAINING_TYPE = "Co-Training"
     TOPIC_BASED_TRAINING_TYPE = "Topic-Based"
 
-    # Constants relevant at predicting
-    PERCENTAGE_MINIMUM_DIFF = 0.1
-    PERCENTAGE_MINIMUM_CONF_CO = 0.9
-    PERCENTAGE_MINIMUM_CONF_SELF = 0.8
-
     CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]

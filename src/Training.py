@@ -5,8 +5,8 @@ warnings.filterwarnings('ignore')
 
 
 class SelfTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration, test_type):
-        Wrapper.__init__(self, label, un_label, test, iteration, test_type)
+    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
+        Wrapper.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.SELF_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/self_training_' + self.get_file_prefix() + str(time.time())
@@ -25,8 +25,7 @@ class SelfTraining(Wrapper):
         f_p_l = self.commons.get_labels(f_p , predict_proba_0)
         predict_0 = self.ds._get_model_(0,self.cons.NO_TOPIC).predict([ z_0 ]).tolist()[ 0 ]
 
-        if f_p - s_p < self.cons.PERCENTAGE_MINIMUM_DIFF or\
-                        f_p < self.cons.PERCENTAGE_MINIMUM_CONF_SELF:
+        if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
             return predict_0
         else:
             return f_p_l
@@ -37,16 +36,15 @@ class SelfTraining(Wrapper):
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
         f_p_l = self.commons.get_labels(f_p , predict_proba_0)
 
-        if f_p - s_p < self.cons.PERCENTAGE_MINIMUM_DIFF or \
-                        f_p < self.cons.PERCENTAGE_MINIMUM_CONF_SELF:
+        if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
             return self.cons.UNLABELED,0
         else:
             return f_p_l,f_p
 
 
 class CoTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration, test_type):
-        Wrapper.__init__(self, label, un_label, test, iteration, test_type)
+    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
+        Wrapper.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.CO_TRAINING_TYPE
         self.NO_OF_MODELS = 2
         self.final_file = '../dataset/analysed/co_training_' + self.get_file_prefix() + str(time.time())
@@ -75,8 +73,7 @@ class CoTraining(Wrapper):
         if predict == predict_0:
             return predict
         else:
-            if f_p - s_p < self.cons.PERCENTAGE_MINIMUM_DIFF\
-                    or f_p < self.cons.PERCENTAGE_MINIMUM_CONF_CO:
+            if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
                 maxi = max(predict , predict_0)
                 mini = min(predict , predict_0)
 
@@ -105,16 +102,15 @@ class CoTraining(Wrapper):
         if predict == predict_0:
             return predict, 0.9
         else:
-            if f_p - s_p < self.cons.PERCENTAGE_MINIMUM_DIFF \
-                    or f_p < self.cons.PERCENTAGE_MINIMUM_CONF_CO:
+            if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
                 return self.cons.UNLABELED,0
             else:
                 return f_p_l,f_p
 
 
 class TopicOriented(SelfTraining):
-    def __init__(self, label, un_label, test, iteration, test_type):
-        SelfTraining.__init__(self, label, un_label, test, iteration, test_type)
+    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
+        SelfTraining.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.TOPIC_BASED_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/topic_based_' + self.get_file_prefix() + str(time.time())
