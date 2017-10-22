@@ -43,7 +43,7 @@ class PreProcess:
         line = fn.readline()
         negation_list = [ ]
         while line:
-            negation_list.append(line.split(None , 1)[ 0 ]);
+            negation_list.append(line.split(None , 1)[ 0 ])
             line = fn.readline()
         fn.close()
         punctuation_marks = [ "." , ":" , ";" , "!" , "?" ]
@@ -112,14 +112,14 @@ class PreProcess:
 
     def do_lemmatize(self, tweet):
         result_tweet = ""
-        for i , j in pos_tag(word_tokenize(tweet)):
-            try:
-                if j[0].lower() in ['a' , 'n' , 'v'] :
-                    result_tweet += str(self.lemmatizer.lemmatize(i , j[ 0 ].lower())) + " "
-                else :
-                    result_tweet += self.lemmatizer.lemmatize(i) + " "
-            except UnicodeDecodeError:
-                result_tweet = result_tweet
+        try:
+            for i , j in pos_tag(word_tokenize(tweet)):
+                    if j[0].lower() in ['a' , 'n' , 'v'] :
+                        result_tweet += str(self.lemmatizer.lemmatize(i , j[ 0 ].lower())) + " "
+                    else :
+                        result_tweet += self.lemmatizer.lemmatize(i) + " "
+        except UnicodeDecodeError:
+            result_tweet = ""
         return result_tweet
 
     def pre_process_tweet(self , tweet):
