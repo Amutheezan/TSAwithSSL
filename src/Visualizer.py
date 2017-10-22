@@ -190,7 +190,7 @@ class Visualizer(QtGui.QMainWindow):
         self.prediction.move(60 , 460)
         self.prediction.resize(180, 30)
         self.setGeometry(375 , 120  , 620  , 500)
-        self.setWindowTitle('TSAwithSSL, v0.1.2.5_1')
+        self.setWindowTitle('TSAwithSSL, v0.1.2.5_3')
         self.setStyleSheet("background-color: #1dcaff; color: #383a39;")
         self.setWindowIcon(QtGui.QIcon('../resource/images/icons/ico.png'))
         self.show()

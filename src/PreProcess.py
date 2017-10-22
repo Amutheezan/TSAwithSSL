@@ -110,21 +110,8 @@ class PreProcess:
                 tag_tweet += tagged_tweet[ i ][ 0 ] + "|" + "NOU" + " "
         return tag_tweet
 
-    def do_lemmatize(self, tweet):
-        result_tweet = ""
-        try:
-            for i , j in pos_tag(word_tokenize(tweet)):
-                    if j[0].lower() in ['a' , 'n' , 'v'] :
-                        result_tweet += str(self.lemmatizer.lemmatize(i , j[ 0 ].lower())) + " "
-                    else :
-                        result_tweet += self.lemmatizer.lemmatize(i) + " "
-        except UnicodeDecodeError:
-            result_tweet = ""
-        return result_tweet
-
     def pre_process_tweet(self , tweet):
         tweet = tweet.lower()
-        tweet = self.do_lemmatize(tweet)
         tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))' , 'url' , tweet)
         tweet = re.sub('((www\.[^\s]+)|(http?://[^\s]+))' , 'url' , tweet)
         tweet = re.sub('@[^\s]+' , 'at_user' , tweet)
