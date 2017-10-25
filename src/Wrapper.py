@@ -3,8 +3,7 @@ import time
 import warnings
 
 import numpy as np
-from sklearn import preprocessing as pr , svm
-
+from sklearn import preprocessing as pr, svm
 from SystemStore import *
 from Features import *
 from PreProcess import PreProcess
@@ -266,7 +265,7 @@ class Wrapper:
             kernel_function = self.cons.DEFAULT_KERNEL
             model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                             class_weight=class_weights , gamma=gamma , probability=True)
-            model.fit(vectors, labels)
+            model = model.fit(vectors,labels)
         else:
             model = None
         self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode, topic)

@@ -96,8 +96,8 @@ class CoTraining(Wrapper):
         sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)
         f_p , s_p = self.commons.first_next_max(sum_predict_proba)
         f_p_l = self.commons.get_labels(f_p , sum_predict_proba)
-        predict = self.ds._get_model_(1).predict([z]).tolist()[0]
-        predict_0 = self.ds._get_model_(0).predict([z_0]).tolist()[0]
+        predict = self.ds._get_model_(1,self.cons.NO_TOPIC).predict([z]).tolist()[0]
+        predict_0 = self.ds._get_model_(0,self.cons.NO_TOPIC).predict([z_0]).tolist()[0]
 
         if predict == predict_0:
             return predict, 0.9
