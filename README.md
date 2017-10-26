@@ -29,8 +29,9 @@ You can specify the values for following
 3.  Test Limit
 4.  No of Iteration
 5.  Training Type
-6.  Test Data set
-7.  Confidence 
-8.  Confidence Difference
+6.  Train Data set
+7.  Test Data set
+8.  Confidence 
+9.  Confidence Difference
     
 and click the button for make model; you can also predict the tweet once the model generated.

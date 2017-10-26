@@ -5,8 +5,8 @@ warnings.filterwarnings('ignore')
 
 
 class SelfTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
-        Wrapper.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
+    def __init__(self, label, un_label, test, iteration, train_type, test_type, confidence, confidence_diff):
+        Wrapper.__init__(self, label, un_label, test, iteration,train_type,  test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.SELF_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/self_training_' + self.get_file_prefix() + str(time.time())
@@ -43,8 +43,8 @@ class SelfTraining(Wrapper):
 
 
 class CoTraining(Wrapper):
-    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
-        Wrapper.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
+    def __init__(self, label, un_label, test, iteration, train_type, test_type, confidence, confidence_diff):
+        Wrapper.__init__(self, label, un_label, test, iteration, train_type,  test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.CO_TRAINING_TYPE
         self.NO_OF_MODELS = 2
         self.final_file = '../dataset/analysed/co_training_' + self.get_file_prefix() + str(time.time())
@@ -109,8 +109,8 @@ class CoTraining(Wrapper):
 
 
 class TopicOriented(SelfTraining):
-    def __init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff):
-        SelfTraining.__init__(self, label, un_label, test, iteration, test_type, confidence, confidence_diff)
+    def __init__(self, label, un_label, test, iteration, train_type,  test_type, confidence, confidence_diff):
+        SelfTraining.__init__(self, label, un_label, test, iteration, train_type, test_type, confidence, confidence_diff)
         self.TRAINING_TYPE = self.cons.TOPIC_BASED_TRAINING_TYPE
         self.NO_OF_MODELS = 1
         self.final_file = '../dataset/analysed/topic_based_' + self.get_file_prefix() + str(time.time())
@@ -121,13 +121,13 @@ class TopicOriented(SelfTraining):
         self.update_with_topics()
         self.generate_vectors_and_labels()
         self.make_model(self.cons.NO_TOPIC)
-        self.save_result(test_type)
+        self.save_result()
         while self.ds.CURRENT_ITERATION < 1:
             self.load_iteration_dict()
             for topic in self.ds.TOPICS.keys():
                 self.generate_vectors_and_labels()
                 self.make_model(topic)
-            self.save_result(test_type)
+            self.save_result()
 
     def update_with_topics(self):
         train = self.ds.TRAIN_DICT.copy()

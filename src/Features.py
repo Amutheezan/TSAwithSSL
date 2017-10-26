@@ -440,7 +440,7 @@ class NGram:
                 is_having_error = True
         return word_freq_dict , postag_freq_dict
 
-    def score(self , tweet , p , n , ne , ngram):
+    def score(self , tweet , p, n, u , ngram):
         pos = 0
         neg = 0
         neu = 0
@@ -450,7 +450,7 @@ class NGram:
         for element in dictof_grams.keys():
             posCount = float(self.get_count(element , p))
             negCount = float(self.get_count(element , n))
-            neuCount = float(self.get_count(element , ne))
+            neuCount = float(self.get_count(element , u))
             totalCount = posCount + negCount + neuCount
             if totalCount != 0:
                 pos += posCount / totalCount
@@ -464,6 +464,8 @@ class NGram:
             temp = float(pol.get(gram))
             if temp > 0.0:
                 count = temp
+            else:
+                count = 0.0
         except:
-            TypeError
+            count = 0.0
         return count

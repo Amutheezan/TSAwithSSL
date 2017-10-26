@@ -3,6 +3,8 @@ import os
 import shutil
 from sklearn.externals import joblib
 
+# 2013
+
 # SELF_TRAINING PARAMETERS
 
 # {'kernel': 'rbf', 'C' : 0.28, 'gamma' :1.0} 0.65
@@ -17,23 +19,39 @@ from sklearn.externals import joblib
 # {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651
 # {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651
 
+# 2017
+
+# CO_TRAINING PARAMETERS
+
+# Feature Set 1
+# {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.3}  0.606086451214
+# {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.31} 0.606652917589
+
+#  Feature Set 0
+#  {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.3}  0.527096744028
+#  {'kernel': 'rbf', 'C': 0.29, 'gamma': 0.31}  0.527096744028
+
 
 class Constants:
     # Location of files to be loaded
-    FILE_LABELED = "../dataset/semeval2014.csv"
-    FILE_UN_LABELED = "../dataset/unlabeled.csv"
-    FILE_TEST = "../dataset/test2014.csv"
-    FILE_TUNE = "../dataset/tune2014.csv"
+    FILE_LABELED_2013 = "../dataset/main/train/SemEval2013.csv"
+    FILE_LABELED_2017 = "../dataset/main/train/SemEval2017.csv"
+    FILE_UN_LABELED = "../dataset/main/unlabeled/Unlabeled.csv"
+    FILE_TUNE = "../dataset/main/tune/Development.csv"
+    FILE_TEST_2013 = "../dataset/main/test/SemEval2013_Twitter2013.csv"
+    FILE_TEST_2014 = "../dataset/main/test/SemEval2013_Twitter2014.csv"
+    FILE_TEST_2017 = "../dataset/main/test/SemEval2017.csv"
+
+    TRAIN_2013 = "SemEval2013"
+    TRAIN_2017 = "SemEval2017"
+    TEST_2013 = "SemEval2013_Twitter2013"
+    TEST_2014 = "SemEval2013_Twitter2014"
+    TEST_2017 = "SemEval2017"
 
     # Constant relevant to Classifier [SVM]
     CLASSIFIER_SVM = "svm"
     KERNEL_LINEAR = "linear"
     KERNEL_RBF = "rbf"
-
-    # Test type of SemEval 2013/2014
-    TEST_TYPE_TWITTER_2013 = "Twitter2013"
-    TEST_TYPE_TWITTER_2014 = "Twitter2014"
-    TEST_TYPE_TWITTER_SARCASM = "Twitter2014Sarcasm"
 
     NO_TOPIC = "###NO###TOPIC###"
     NO_OF_TOPICS = 10
@@ -50,13 +68,21 @@ class Constants:
     NAME_NEUTRAL = "neutral"
 
     # Training Set Ratio
-    POS_RATIO = 0.3734
-    NEG_RATIO = 0.1511
-    NEU_RATIO = 0.4754
+    POS_RATIO_2013 = 0.3734
+    NEG_RATIO_2013 = 0.1511
+    NEU_RATIO_2013 = 0.4754
+
+    POS_RATIO_2017 = 0.34213
+    NEG_RATIO_2017 = 0.15659
+    NEU_RATIO_2017 = 0.50128
 
     # Full Data set size
-    LABEL_DATA_SET_SIZE = 9684
-    TEST_DATA_SET_SIZE = 8987
+    LABEL_DATA_SET_SIZE_2013 = 9684
+    TEST_DATA_SET_SIZE_2013_TWITTER_2013 = 1853
+    TEST_DATA_SET_SIZE_2013_TWITTER_2014 = 3813
+
+    LABEL_DATA_SET_SIZE_2017 = 20633
+    TEST_DATA_SET_SIZE_2017 = 12284
 
     # training type
     SELF_TRAINING_TYPE = "Self-Training"
@@ -74,20 +100,61 @@ class Constants:
     def _setup_(self):
         self.TRAINING_TYPES = [self.SELF_TRAINING_TYPE,
                              self.CO_TRAINING_TYPE, self.TOPIC_BASED_TRAINING_TYPE]
-        self.TEST_TYPES = [self.TEST_TYPE_TWITTER_2013,
-                           self.TEST_TYPE_TWITTER_2014,self.TEST_TYPE_TWITTER_SARCASM]
         self.LABEL_TYPES = [self.LABEL_POSITIVE, self.LABEL_NEGATIVE,self.LABEL_NEUTRAL]
 
-        if self.DEFAULT_CLASSIFIER == self.CLASSIFIER_SVM:
-            self.DEFAULT_KERNEL_0 = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER_0 = 0.1
-            self.DEFAULT_GAMMA_SVM_0 = 0.1
-            self.DEFAULT_KERNEL = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER = 0.73
-            self.DEFAULT_GAMMA_SVM = 1.02
-            self.DEFAULT_KERNEL_SELF = self.KERNEL_RBF
-            self.DEFAULT_C_PARAMETER_SELF = 0.28
-            self.DEFAULT_GAMMA_SVM_SELF = 1.00
+        self.TRAIN_TYPES = [self.TRAIN_2013, self.TRAIN_2017]
+
+        self.TRAIN_2013_CONTENTS = {
+            "train_file" : self.FILE_LABELED_2013,
+            "pos_ratio" : self.POS_RATIO_2013,
+            "neg_ratio" : self.NEG_RATIO_2013,
+            "neu_ratio" : self.NEU_RATIO_2013,
+            "kernel" : self.KERNEL_RBF,
+            "c_0" : 0.1,
+            "gamma_0" : 0.1,
+            "c_1": 0.73 ,
+            "gamma_1": 1.02 ,
+            "c_self": 0.28 ,
+            "gamma_self": 1.00 ,
+            "size" : self.LABEL_DATA_SET_SIZE_2013
+        }
+
+        self.TRAIN_2017_CONTENTS = {
+            "train_file": self.FILE_LABELED_2017 ,
+            "pos_ratio": self.POS_RATIO_2017 ,
+            "neg_ratio": self.NEG_RATIO_2017 ,
+            "neu_ratio": self.NEU_RATIO_2017,
+            "kernel": self.KERNEL_RBF ,
+            "c_0": 0.29 ,
+            "gamma_0": 0.31 ,
+            "c_1": 0.30 ,
+            "gamma_1": 0.31 ,
+            "c_self": 0.91 ,  # need to be tuned again
+            "gamma_self": 0.03 ,  # need to be tune again
+            "size": self.LABEL_DATA_SET_SIZE_2017
+        }
+        self.TRAIN_SET = {
+            self.TRAIN_2013: self.TRAIN_2013_CONTENTS,
+            self.TRAIN_2017: self.TRAIN_2017_CONTENTS
+        }
+        self.TEST_2013_CONTENTS = {
+            "test_file" : self.FILE_TEST_2013,
+            "size" : self.TEST_DATA_SET_SIZE_2013_TWITTER_2013,
+        }
+        self.TEST_2014_CONTENTS = {
+            "test_file" : self.FILE_TEST_2014,
+            "size" : self.TEST_DATA_SET_SIZE_2013_TWITTER_2014,
+        }
+        self.TEST_2017_CONTENTS = {
+            "test_file" : self.FILE_TEST_2017,
+            "size" : self.TEST_DATA_SET_SIZE_2017,
+        }
+        self.TEST_TYPES = [self.TEST_2013, self.TEST_2014, self.TEST_2017]
+        self.TEST_SET = {
+            self.TEST_2013: self.TEST_2013_CONTENTS,
+            self.TEST_2014: self.TEST_2014_CONTENTS ,
+            self.TEST_2017: self.TEST_2017_CONTENTS
+        }
 
 
 class Commons:
@@ -216,6 +283,7 @@ class DataStore:
     def __init__(self, cons):
         self.cons = cons
         self.TRAIN_DICT = {}
+        self.TUNE_DICT = {}
         self.TOPICS = {}
 
         self.POS_INITIAL = 0
@@ -226,13 +294,13 @@ class DataStore:
         self.NEG_SIZE = 0
         self.NEU_SIZE = 0
 
-        self.POS_UNI_GRAM = {}
-        self.NEG_UNI_GRAM = {}
-        self.NEU_UNI_GRAM = {}
+        self.POS_N_GRAM = {}
+        self.NEG_N_GRAM = {}
+        self.NEU_N_GRAM = {}
 
-        self.POS_POST_UNI_GRAM = {}
-        self.NEG_POST_UNI_GRAM = {}
-        self.NEU_POST_UNI_GRAM = {}
+        self.POS_POST_N_GRAM = {}
+        self.NEG_POST_N_GRAM = {}
+        self.NEU_POST_N_GRAM = {}
 
         self.CURRENT_ITERATION = 0
 
@@ -299,12 +367,26 @@ class DataStore:
     def _get_current_iteration_(self):
         return self.CURRENT_ITERATION
 
-    def _update_uni_gram_(self , pos , neg , neu , is_pos_tag):
+    def _update_uni_gram_(self , pos , neg , neu , n_gram, is_pos_tag):
             if is_pos_tag:
-                self.POS_POST_UNI_GRAM = pos
-                self.NEG_POST_UNI_GRAM = neg
-                self.NEU_POST_UNI_GRAM = neu
+                self.POS_POST_N_GRAM[str(n_gram)] = pos
+                self.NEG_POST_N_GRAM[str(n_gram)] = neg
+                self.NEU_POST_N_GRAM[str(n_gram)] = neu
             if not is_pos_tag:
-                self.POS_UNI_GRAM = pos
-                self.NEG_UNI_GRAM = neg
-                self.NEU_UNI_GRAM = neu
+                self.POS_N_GRAM[str(n_gram)] = pos
+                self.NEG_N_GRAM[str(n_gram)] = neg
+                self.NEU_N_GRAM[str(n_gram)] = neu
+
+    def _get_n_gram_(self, n_gram, is_pos_tag):
+        pos = {}
+        neg = {}
+        neu = {}
+        if is_pos_tag:
+            pos = self.POS_POST_N_GRAM.get(str(n_gram))
+            neg = self.NEG_POST_N_GRAM.get(str(n_gram))
+            neu = self.NEU_POST_N_GRAM.get(str(n_gram))
+        if not is_pos_tag:
+            pos = self.POS_N_GRAM.get(str(n_gram))
+            neg = self.NEG_N_GRAM.get(str(n_gram))
+            neu = self.NEU_N_GRAM.get(str(n_gram))
+        return  pos,neg, neu

@@ -1,7 +1,7 @@
-import csv
 import time
 import warnings
-
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import PredefinedSplit
 import numpy as np
 from sklearn import preprocessing as pr, svm
 from SystemStore import *
@@ -13,9 +13,11 @@ warnings.filterwarnings('ignore')
 
 class Wrapper:
     def __init__(self , label , un_label ,
-                 test, iteration, test_type,
-                 confidence, confidence_diff):
+                 test , iteration , train_type , test_type ,
+                 confidence , confidence_diff):
         self.cons = Constants()
+        self.train_contents = self.cons.TRAIN_SET.get(train_type)
+        self.test_contents = self.cons.TEST_SET.get(test_type)
         self.pre_pros = PreProcess()
         self.mb = MicroBlog()
         self.ws = WritingStyle()
@@ -23,16 +25,16 @@ class Wrapper:
         self.commons = Commons(self.cons)
         self.lexicon = Lexicon(self.pre_pros, self.cons)
         self.n_gram = NGram(self.commons ,self.cons, self.pre_pros )
-        self.LABEL_LIMIT = min(self.cons.LABEL_DATA_SET_SIZE , label)
+        self.LABEL_LIMIT = min(self.train_contents.get("size") , label)
         self.UN_LABEL_LIMIT = min(100000 , un_label)
-        self.TEST_LIMIT = min(self.cons.TEST_DATA_SET_SIZE , test)
+        self.TEST_LIMIT = min(self.test_contents.get("size") , test)
         self.NO_OF_ITERATIONS = max(1, iteration)
-        self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.POS_RATIO)
-        self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEG_RATIO)
-        self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.cons.NEU_RATIO)
-        self.TEST_TYPE = test_type
+        self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("pos_ratio"))
+        self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("neg_ratio"))
+        self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("neu_ratio"))
         self.CONFIDENCE = float(confidence)
         self.CONFIDENCE_DIFF = float(confidence_diff)
+        self.N_GRAM_LIMIT = 1
         self.NO_OF_MODELS = 0
         self.TRAINING_TYPE = ''
         self.final_file = ''
@@ -46,7 +48,7 @@ class Wrapper:
 
     def load_training_dictionary(self):
         temp_train_dict = {}
-        with open(self.cons.FILE_LABELED , 'r') as main_dataset:
+        with open(self.train_contents.get("train_file") , 'r') as main_dataset:
             main = csv.reader(main_dataset)
             pos_count = 1
             neg_count = 1
@@ -70,7 +72,7 @@ class Wrapper:
             unlabeled = csv.reader(main_dataset)
             un_label_count = 1
             for line in unlabeled:
-                count +=1
+                count += 1
                 if un_label_count <= self.UN_LABEL_LIMIT:
                     temp_train_dict.update({str(count): [ str(line[ 0 ]) , self.cons.UNLABELED, 0, 0, self.cons.NO_TOPIC, 0 ]})
                     un_label_count += 1
@@ -82,39 +84,91 @@ class Wrapper:
         self.ds.NEG_SIZE = neg_count
         self.ds.NEU_SIZE = neu_count
         return
+
+    def load_tune_dictionary(self):
+        temp_train_dict = {}
+        temp_tune_dict = {}
+        with open(self.train_contents.get("train_file"), 'r') as main_dataset:
+            main = csv.reader(main_dataset)
+            pos_count = 1
+            neg_count = 1
+            neu_count = 1
+            count = 1
+            for line in main:
+                count += 1
+                if line[ 0 ] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
+                    temp_train_dict.update({str(count): [str(line[ 1 ]), self.cons.LABEL_POSITIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    pos_count += 1
+
+                if line[ 0 ] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
+                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEGATIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    neg_count += 1
+
+                if line[ 0 ] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
+                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEUTRAL, 1, 1, self.cons.NO_TOPIC, 0]})
+                    neu_count += 1
+        self.ds.TRAIN_DICT = temp_train_dict
+        self.ds.POS_INITIAL = pos_count
+        self.ds.NEG_INITIAL = neg_count
+        self.ds.NEU_INITIAL = neu_count
+        self.ds.POS_SIZE = pos_count
+        self.ds.NEG_SIZE = neg_count
+        self.ds.NEU_SIZE = neu_count
+
+        with open(self.cons.FILE_TUNE , 'r') as tune_dataset:
+            tune = csv.reader(tune_dataset)
+            pos_count = 1
+            neg_count = 1
+            neu_count = 1
+            count = 1
+            for line in tune:
+                count += 1
+                if line[ 0 ] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
+                    temp_tune_dict.update({str(count): [str(line[ 1 ]), self.cons.LABEL_POSITIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    pos_count += 1
+
+                if line[ 0 ] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
+                    temp_tune_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEGATIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    neg_count += 1
+
+                if line[ 0 ] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
+                    temp_tune_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEUTRAL, 1, 1, self.cons.NO_TOPIC, 0]})
+                    neu_count += 1
+
+        self.ds.TUNE_DICT = temp_tune_dict
+        return
     
-    def save_result(self, test_type):
+    def save_result(self):
         actual = []
         predicted = []
         temp_file = None
         limit = self.TEST_LIMIT
-        with open(self.cons.FILE_TEST, "r") as testFile:
+        with open(self.test_contents.get("test_file"), "r") as testFile:
             reader = csv.reader(testFile)
             count = 0
             for line in reader:
                 line = list(line)
-                if line[0] == test_type:
-                    tweet = line[2]
-                    s = line[1]
-                    s_v = self.string_to_label(s)
-                    actual.append(s_v)
-                    nl = self.predict(tweet)
-                    predicted.append(nl)
-                    count = count + 1
-                    if count >= limit:
-                        break
+                tweet = line[1]
+                s = line[0]
+                s_v = self.string_to_label(s)
+                actual.append(s_v)
+                nl = self.predict(tweet)
+                predicted.append(nl)
+                count = count + 1
+                if count >= limit:
+                    break
         result = self.commons.get_values(actual,predicted)
         pos = self.ds.POS_SIZE
         neg = self.ds.NEG_SIZE
         neu = self.ds.NEU_SIZE
         sizes = (pos,neg,neu)
         current_iteration = self.ds.CURRENT_ITERATION
-        combined = (test_type,) + sizes + (current_iteration,) + result
+        combined =  sizes + (current_iteration,) + result
         print combined
         if current_iteration > 0:
-            temp_file = open(self.final_file + test_type +'result.csv',"a+")
+            temp_file = open(self.final_file +'result.csv',"a+")
         if current_iteration == 0:
-            temp_file = open(self.final_file + test_type +'result.csv',"w+")
+            temp_file = open(self.final_file  +'result.csv',"w+")
         saving_file = csv.writer(temp_file)
         if current_iteration == 0:
             saving_file.writerow(self.cons.CSV_HEADER)
@@ -166,22 +220,21 @@ class Wrapper:
 
         preprocessed_tweet = self.pre_pros.pre_process_tweet(tweet)
         pos_tag_tweet = self.pre_pros.pos_tag_string(preprocessed_tweet)
-
-        uni_gram_score = self.n_gram.score(preprocessed_tweet , self.ds.POS_UNI_GRAM , self.ds.NEG_UNI_GRAM ,
-                                           self.ds.NEU_UNI_GRAM , 1)
-        post_uni_gram_score = self.n_gram.score(pos_tag_tweet , self.ds.POS_POST_UNI_GRAM ,
-                                                self.ds.NEG_POST_UNI_GRAM ,
-                                                self.ds.NEU_POST_UNI_GRAM , 1)
-        vector.append(self.mb.emoticon_score(tweet))
-        vector.append(self.mb.unicode_emoticon_score(tweet))
-        vector.extend(self.ws.writing_style_vector(tweet))
-        vector.extend(uni_gram_score)
-        vector.extend(post_uni_gram_score)
-
+        for n in range(1, self.N_GRAM_LIMIT + 1 , 1):
+            pos , neg , neu = self.ds._get_n_gram_(n, False)
+            n_gram_score = self.n_gram.score(preprocessed_tweet , pos , neg , neu , n)
+            pos , neg , neu = self.ds._get_n_gram_(n, True)
+            post_n_gram_score = self.n_gram.score(pos_tag_tweet , pos , neg , neu , n)
+            vector.extend(n_gram_score)
+            vector.extend(post_n_gram_score)
         return vector
 
     def map_tweet_feature_values(self, tweet):
-        vector = self.lexicon._all_in_lexicon_score_(tweet)
+        vector = []
+        vector.append(self.mb.emoticon_score(tweet))
+        vector.append(self.mb.unicode_emoticon_score(tweet))
+        vector.extend(self.ws.writing_style_vector(tweet))
+        vector.extend(self.lexicon._all_in_lexicon_score_(tweet))
         return vector
 
     def load_iteration_dict(self):
@@ -207,12 +260,14 @@ class Wrapper:
         return
 
     def generate_vectors_and_labels(self):
-        pos , pos_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_POSITIVE , 1)
-        neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEGATIVE , 1)
-        neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEUTRAL , 1)
+        for n in range(1, self.N_GRAM_LIMIT + 1, 1):
+            pos , pos_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_POSITIVE , n)
+            neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEGATIVE , n)
+            neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEUTRAL , n)
 
-        self.ds._update_uni_gram_(pos , neg , neu , False)
-        self.ds._update_uni_gram_(pos_p , neg_p , neu_p , True)
+            self.ds._update_uni_gram_(pos , neg , neu , n, False)
+            self.ds._update_uni_gram_(pos_p , neg_p , neu_p , n, True)
+
         for mode in range(self.NO_OF_MODELS):
             if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
                 vectors_dict = {}
@@ -262,10 +317,10 @@ class Wrapper:
         vectors = vectors_normalized
         vectors = vectors.tolist()
         if classifier_type == self.cons.CLASSIFIER_SVM:
-            kernel_function = self.cons.DEFAULT_KERNEL
+            kernel_function = self.train_contents.get("kernel")
             model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                             class_weight=class_weights , gamma=gamma , probability=True)
-            model = model.fit(vectors,labels)
+            model = model.fit(vectors, labels)
         else:
             model = None
         self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode, topic)
@@ -276,14 +331,14 @@ class Wrapper:
             c_parameter = 0.0
             gamma = 0.0
             if mode:
-                c_parameter = self.cons.DEFAULT_C_PARAMETER
-                gamma = self.cons.DEFAULT_GAMMA_SVM
+                c_parameter = self.train_contents.get("c_1")
+                gamma = self.train_contents.get("gamma_1")
             if not mode and self.NO_OF_MODELS == 2:
-                c_parameter = self.cons.DEFAULT_C_PARAMETER_0
-                gamma = self.cons.DEFAULT_GAMMA_SVM_0
+                c_parameter = self.train_contents.get("c_0")
+                gamma = self.train_contents.get("gamma_0")
             if not mode and self.NO_OF_MODELS == 1:
-                c_parameter = self.cons.DEFAULT_C_PARAMETER_SELF
-                gamma = self.cons.DEFAULT_GAMMA_SVM_SELF
+                c_parameter = self.train_contents.get("c_self")
+                gamma = self.train_contents.get("gamma_self")
             self.generate_model(mode , c_parameter , gamma , topic)
 
     def transform_tweet(self , tweet , mode, topic):
@@ -292,11 +347,6 @@ class Wrapper:
         z = self.ds._get_normalizer_(mode,topic).transform([ z_scaled ])
         z = z[0].tolist()
         return z
-
-    def common_run(self,test_type):
-        self.generate_vectors_and_labels()
-        self.make_model(self.cons.NO_TOPIC)
-        self.save_result(test_type)
 
     def get_class_weight(self):
         pos = self.ds.POS_SIZE
@@ -308,14 +358,54 @@ class Wrapper:
         weights[self.cons.LABEL_NEUTRAL] = 1.0
         return weights
 
+    def common_run(self):
+        self.generate_vectors_and_labels()
+        self.make_model(self.cons.NO_TOPIC)
+        self.save_result()
+
+    def tune_run(self):
+        self.load_tune_dictionary()
+        print "load tune dictionary"
+        self.generate_vectors_and_labels()
+        print "generated vectors"
+        self.do_tuning()
+        
+    def do_tuning(self):
+        vectors = self.ds._get_vectors_(0)
+        labels = self.ds._get_labels_(0)
+        for label in self.cons.LABEL_TYPES:
+            vec , lab = self.load_matrix_sub(self.ds.TUNE_DICT , 0 , label)
+            vectors += vec
+            labels += lab
+        vectors_scaled = pr.scale(vectors)
+        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
+        vectors = vectors_normalized
+        vectors = vectors.tolist()
+        kernel_list = [self.cons.KERNEL_LINEAR , self.cons.KERNEL_RBF]
+        c_range = [0.01 * i for i in range(1, 11, 1)]
+        gamma_range = [0.01 * i for i in range(1, 11, 1)]
+        parameters = {'kernel': kernel_list , 'C': c_range ,'gamma': gamma_range}
+        svr = svm.SVC(class_weight=self.get_class_weight())
+        test_fold = []
+        for i in range(1 , len(vectors)):
+            if i < 20633:
+                test_fold.append(-1)
+            else:
+                test_fold.append(0)
+        print "tuning started"
+        ps = PredefinedSplit(test_fold=test_fold)
+        grid = GridSearchCV(svr , parameters , scoring='f1_weighted' , n_jobs=-1 , cv=ps)
+        tunes_model = grid.fit(vectors , labels)
+        print tunes_model.best_params_ , tunes_model.best_score_
+
     def do_training(self):
         self.ds.CURRENT_ITERATION = 0
         time_list = [time.time()]
         self.load_training_dictionary()
-        self.common_run(self.TEST_TYPE)
+        self.common_run()
         while self.ds.CURRENT_ITERATION < 10:
             self.load_iteration_dict()
-            self.common_run(self.TEST_TYPE)
+            self.common_run()
 
         time_list.append(time.time())
         print self.commons.temp_difference_cal(time_list)
