@@ -90,7 +90,7 @@ class Constants:
     TOPIC_BASED_TRAINING_TYPE = "Topic-Based"
 
     CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
-                   "PRE-POS" , "PRE-NEG" , "RE-POS" , "RE-NEG" ,
+                   "PRE-POS" , "PRE-NEG" , "PRE-NEU" , "RE-POS" , "RE-NEG" , "RE-NEU" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
 
     def __init__(self):
@@ -250,7 +250,7 @@ class Commons:
                         FN_P +=1
                     if p == self.cons.LABEL_NEUTRAL:
                         FNeu_P +=1
-                if a == self.cons.LABEL_NEGATIVE:
+                if a == self.cons.n:
                     if p == self.cons.LABEL_POSITIVE:
                         FP_N += 1
                     if p == self.cons.LABEL_NEUTRAL:
@@ -264,11 +264,13 @@ class Commons:
         accuracy = self.get_divided_value(TP+TN+TNeu, TP+TN+TNeu+FP_N+FP_Neu+FN_P+FN_Neu+FNeu_P+FNeu_N)
         pre_pos = self.get_divided_value(TP , TP + FP_Neu + FP_N)
         pre_neg = self.get_divided_value(TN , TN + FN_Neu + FN_P)
-        re_pos = self.get_divided_value(TP,TP+FNeu_P+FN_P)
-        re_neg = self.get_divided_value(TN,TN+FNeu_N+FP_N)
+        pre_neu = self.get_divided_value(TNeu, TNeu + FNeu_P + FNeu_N)
+        re_pos = self.get_divided_value(TP, TP+FNeu_P+FN_P)
+        re_neg = self.get_divided_value(TN, TN+FNeu_N+FP_N)
+        re_neu = self.get_divided_value(TNeu, TNeu + FN_Neu + FP_Neu )
         f1_pos = 2 * self.get_divided_value(pre_pos * re_pos , pre_pos + re_pos)
         f1_neg = 2 * self.get_divided_value(pre_neg * re_neg , pre_neg + re_neg)
-        return accuracy,pre_pos,pre_neg,re_pos,re_neg,f1_pos,f1_neg, 0.5 * (f1_neg + f1_pos)
+        return accuracy,pre_pos,pre_neg,pre_neu, re_pos,re_neg, re_neu,f1_pos,f1_neg, 0.5 * (f1_neg + f1_pos)
 
 
 class DataStore:
