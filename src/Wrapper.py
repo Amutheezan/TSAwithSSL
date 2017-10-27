@@ -383,7 +383,7 @@ class Wrapper:
         vectors = vectors.tolist()
         test_fold = []
         for i in range(1 , len(vectors)):
-            if i < 20633:
+            if i < 500:
                 test_fold.append(-1)
             else:
                 test_fold.append(0)
@@ -394,8 +394,8 @@ class Wrapper:
         initial_ratio = 0.1
         c_start = 1
         gamma_start = 1
-        total_size = 16
-        step_size = 8
+        total_size = 10
+        step_size = 5
         c_range, gamma_range = self.get_tune_ratio(initial_ratio, c_start, gamma_start, total_size, step_size)
         parameters = {'kernel': kernel_list , 'C': c_range ,'gamma': gamma_range}
         print "tuning started"
@@ -439,8 +439,8 @@ class Wrapper:
         print c_latest, gamma_latest
 
     def get_tune_ratio(self, initial_ratio, c_start, gamma_start, total_size, step_size):
-        c_range = [ initial_ratio * i for i in range(c_start , c_start + total_size , step_size) ]
-        gamma_range = [ initial_ratio * i for i in range(gamma_start , gamma_start + total_size , step_size) ]
+        c_range = [ initial_ratio * i for i in range(c_start , c_start + total_size + 1, step_size)]
+        gamma_range = [ initial_ratio * i for i in range(gamma_start , gamma_start + total_size + 1, step_size) ]
         return c_range, gamma_range
 
     def do_training(self):

@@ -186,5 +186,5 @@ class TopicOriented(SelfTraining):
         return f_p_max_label
 
 c = Constants()
-s = SelfTraining(20633, 100, 100, 1,c.TRAIN_2017, c.TEST_2017, 0.9, 0.1)
+s = SelfTraining(500, 100, 100, 1, c.TRAIN_2017, c.TEST_2017, 0.9, 0.1)
 s.tune_run()
