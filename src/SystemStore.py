@@ -250,7 +250,7 @@ class Commons:
                         FN_P +=1
                     if p == self.cons.LABEL_NEUTRAL:
                         FNeu_P +=1
-                if a == self.cons.n:
+                if a == self.cons.LABEL_NEGATIVE:
                     if p == self.cons.LABEL_POSITIVE:
                         FP_N += 1
                     if p == self.cons.LABEL_NEUTRAL:
