@@ -383,7 +383,7 @@ class Wrapper:
         vectors = vectors.tolist()
         test_fold = []
         for i in range(1 , len(vectors)):
-            if i < 500:
+            if i < 20633:
                 test_fold.append(-1)
             else:
                 test_fold.append(0)
