@@ -1,6 +1,7 @@
 import warnings
 import time
 from Wrapper import Wrapper
+from SystemStore import Constants
 warnings.filterwarnings('ignore')
 
 
@@ -183,3 +184,7 @@ class TopicOriented(SelfTraining):
         f_p_max , f_p_key = self.commons.find_max_value_in_dict(f_p)
         f_p_max_label = self.commons.get_labels(f_p_max , predict_proba_0[ f_p_key ])
         return f_p_max_label
+
+c = Constants()
+s = SelfTraining(20633, 100, 100, 1,c.TRAIN_2017, c.TEST_2017, 0.9, 0.1)
+s.tune_run()
