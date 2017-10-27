@@ -383,7 +383,7 @@ class Wrapper:
         vectors = vectors.tolist()
         test_fold = []
         for i in range(1 , len(vectors)):
-            if i < 20633:
+            if i < 20631:
                 test_fold.append(-1)
             else:
                 test_fold.append(0)
@@ -391,11 +391,11 @@ class Wrapper:
         ps = PredefinedSplit(test_fold=test_fold)
         kernel_list = [self.cons.KERNEL_RBF]
 
-        initial_ratio = 0.1
+        initial_ratio = 0.01
         c_start = 1
         gamma_start = 1
-        total_size = 10
-        step_size = 5
+        total_size = 1024
+        step_size = 512
         c_range, gamma_range = self.get_tune_ratio(initial_ratio, c_start, gamma_start, total_size, step_size)
         parameters = {'kernel': kernel_list , 'C': c_range ,'gamma': gamma_range}
         print "tuning started"

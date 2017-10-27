@@ -185,6 +185,6 @@ class TopicOriented(SelfTraining):
         f_p_max_label = self.commons.get_labels(f_p_max , predict_proba_0[ f_p_key ])
         return f_p_max_label
 
-# c = Constants()
-# s = SelfTraining(20633, 100, 100, 1, c.TRAIN_2017, c.TEST_2017, 0.9, 0.1)
-# s.tune_run()
+c = Constants()
+s = SelfTraining(20631, 10, 10, 1, c.TRAIN_2017, c.TEST_2017, 0.1, 0.1)
+s.tune_run()
