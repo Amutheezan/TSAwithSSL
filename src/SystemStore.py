@@ -23,13 +23,8 @@ from sklearn.externals import joblib
 
 # CO_TRAINING PARAMETERS
 
-# Feature Set 1
-# {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.3}  0.606086451214
-# {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.31} 0.606652917589
+# Will be added Later
 
-#  Feature Set 0
-#  {'kernel': 'rbf', 'C': 0.3, 'gamma': 0.3}  0.527096744028
-#  {'kernel': 'rbf', 'C': 0.29, 'gamma': 0.31}  0.527096744028
 
 
 class Constants:

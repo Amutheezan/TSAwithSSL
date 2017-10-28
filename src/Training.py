@@ -16,7 +16,7 @@ class SelfTraining(Wrapper):
         vector = []
         if not mode:
             vector.extend(self.map_tweet_feature_values(tweet))
-            vector.extend(self.map_tweet_n_gram_values(tweet))
+            # vector.extend(self.map_tweet_n_gram_values(tweet))
         return vector
 
     def predict(self , tweet):

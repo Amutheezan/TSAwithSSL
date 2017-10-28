@@ -394,42 +394,37 @@ class Wrapper:
         initial_ratio = 0.01
         c_start = 1
         gamma_start = 1
+        total_range = 128
+        c_end = c_start + total_range
+        gamma_end = gamma_start + total_range
         c_latest = 0.01
         gamma_latest = 0.01
-        total_range = 1024
+        score_latest = 0.00
         while True :
+            score_previous = score_latest
             c_previous = c_latest
             gamma_previous = gamma_latest
-            if c_latest == 1 * initial_ratio:
-                c_end = c_start + total_range/2
-            if gamma_latest == 1 * initial_ratio:
-                gamma_end = gamma_start + total_range/2
-            if c_latest == (1 + total_range) * initial_ratio:
-                c_start = c_start + total_range/2
-            if gamma_latest == (1 + total_range) * initial_ratio:
-                gamma_start = gamma_start + total_range/2
-            if c_latest == (1 + total_range/2) * initial_ratio:
-                c_start = c_start + total_range/4
-                c_end  = c_end - total_range/4
-            if gamma_latest == (1 + total_range/2) * initial_ratio:
-                gamma_start = gamma_start + total_range/4
-                gamma_end  = gamma_end - total_range/4
-
             c_step = (c_end - c_start)/2
             gamma_step = (gamma_end - gamma_start)/2
             c_range = [initial_ratio * i for i in range(c_start, c_end + 1, c_step)]
             gamma_range = [initial_ratio * i for i in range(gamma_start, gamma_end + 1, gamma_step)]
-            print c_range
-            print gamma_range
+            print "range of c" , c_range
+            print "range of gamma", gamma_range
             parameters = {'kernel': kernel_list , 'C': c_range , 'gamma': gamma_range}
             grid = GridSearchCV(svr , parameters , scoring='f1_weighted' , n_jobs=-1 , cv=ps)
             tunes_model = grid.fit(vectors , labels)
             results = tunes_model.best_params_
-            c_latest = results[ 'C' ]
+            score_latest = tunes_model.best_score_
+            c_latest = results['C']
             gamma_latest = results['gamma']
-            if c_latest == c_previous and gamma_latest == gamma_previous:
+            if c_latest == c_previous and gamma_latest == gamma_previous \
+                    and (score_latest <= score_previous or total_range == 1):
                 break
             else:
+                c_start = int(max(1, c_latest * 100 - total_range /4))
+                c_end = int(c_latest * 100 + total_range / 4)
+                gamma_start = int(max(1, gamma_latest * 100 - total_range/4))
+                gamma_end = int(gamma_latest * 100 + total_range / 4)
                 total_range = total_range/2
         print c_latest, gamma_latest
 
