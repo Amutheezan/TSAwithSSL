@@ -394,54 +394,44 @@ class Wrapper:
         initial_ratio = 0.01
         c_start = 1
         gamma_start = 1
-        total_size = 1024
-        step_size = 512
-        c_range, gamma_range = self.get_tune_ratio(initial_ratio, c_start, gamma_start, total_size, step_size)
-        parameters = {'kernel': kernel_list , 'C': c_range ,'gamma': gamma_range}
-        print "tuning started"
-        grid = GridSearchCV(svr , parameters , scoring='f1_weighted' , n_jobs=-1 , cv=ps)
-        tunes_model = grid.fit(vectors , labels)
-        results = tunes_model.best_params_
-        c_latest = 0.00
-        gamma_latest = 0.00
-        c_last = results['C']
-        gamma_last = results['gamma']
+        c_latest = 0.01
+        gamma_latest = 0.01
+        total_range = 1024
+        while True :
+            c_previous = c_latest
+            gamma_previous = gamma_latest
+            if c_latest == 1 * initial_ratio:
+                c_end = c_start + total_range/2
+            if gamma_latest == 1 * initial_ratio:
+                gamma_end = gamma_start + total_range/2
+            if c_latest == (1 + total_range) * initial_ratio:
+                c_start = c_start + total_range/2
+            if gamma_latest == (1 + total_range) * initial_ratio:
+                gamma_start = gamma_start + total_range/2
+            if c_latest == (1 + total_range/2) * initial_ratio:
+                c_start = c_start + total_range/4
+                c_end  = c_end - total_range/4
+            if gamma_latest == (1 + total_range/2) * initial_ratio:
+                gamma_start = gamma_start + total_range/4
+                gamma_end  = gamma_end - total_range/4
 
-        while  c_latest != c_last and gamma_latest != gamma_last:
-            if c_last != c_start + step_size:
-                if c_last < c_start + step_size:
-                    c_start = c_start
-                else :
-                    c_start = c_start + step_size
-            else:
-                c_start = c_start + step_size/2
-
-            if gamma_last != gamma_start + step_size:
-                if gamma_last < gamma_start + step_size:
-                    gamma_start = gamma_start
-                else :
-                    gamma_start = gamma_start + step_size
-            else:
-                gamma_start = gamma_start + step_size/2
-
-            total_size = total_size / 2
-            step_size = step_size / 2
-            initial_ratio = initial_ratio / 2
-            c_range, gamma_range = self.get_tune_ratio(initial_ratio, c_start, gamma_start, total_size, step_size)
+            c_step = (c_end - c_start)/2
+            gamma_step = (gamma_end - gamma_start)/2
+            c_range = [initial_ratio * i for i in range(c_start, c_end + 1, c_step)]
+            gamma_range = [initial_ratio * i for i in range(gamma_start, gamma_end + 1, gamma_step)]
+            print c_range
+            print gamma_range
             parameters = {'kernel': kernel_list , 'C': c_range , 'gamma': gamma_range}
             grid = GridSearchCV(svr , parameters , scoring='f1_weighted' , n_jobs=-1 , cv=ps)
             tunes_model = grid.fit(vectors , labels)
             results = tunes_model.best_params_
             c_latest = results[ 'C' ]
             gamma_latest = results['gamma']
-            if step_size == 1:
+            if c_latest == c_previous and gamma_latest == gamma_previous:
                 break
+            else:
+                total_range = total_range/2
         print c_latest, gamma_latest
-
-    def get_tune_ratio(self, initial_ratio, c_start, gamma_start, total_size, step_size):
-        c_range = [ initial_ratio * i for i in range(c_start , c_start + total_size + 1, step_size)]
-        gamma_range = [ initial_ratio * i for i in range(gamma_start , gamma_start + total_size + 1, step_size) ]
-        return c_range, gamma_range
 
     def do_training(self):
         self.ds.CURRENT_ITERATION = 0
