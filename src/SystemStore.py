@@ -23,8 +23,11 @@ from sklearn.externals import joblib
 
 # CO_TRAINING PARAMETERS
 
-# Will be added Later
+#  Feature Set 1
+#  {'kernel': 'rbf', 'C': 0.01, 'gamma': 1.29}
 
+# Feature Set 0
+# {'kernel': 'rbf', 'C': 0.67, 'gamma': 1.05}
 
 
 class Constants:
@@ -120,10 +123,10 @@ class Constants:
             "neg_ratio": self.NEG_RATIO_2017 ,
             "neu_ratio": self.NEU_RATIO_2017,
             "kernel": self.KERNEL_RBF ,
-            "c_0": 0.29 ,
-            "gamma_0": 0.31 ,
-            "c_1": 0.30 ,
-            "gamma_1": 0.31 ,
+            "c_0": 0.67 ,
+            "gamma_0": 1.05 ,
+            "c_1": 0.01 ,
+            "gamma_1": 0.29 ,
             "c_self": 0.91 ,  # need to be tuned again
             "gamma_self": 0.03 ,  # need to be tune again
             "size": self.LABEL_DATA_SET_SIZE_2017

@@ -1,7 +1,6 @@
 import warnings
 import time
 from Wrapper import Wrapper
-from SystemStore import Constants
 warnings.filterwarnings('ignore')
 
 
@@ -16,7 +15,7 @@ class SelfTraining(Wrapper):
         vector = []
         if not mode:
             vector.extend(self.map_tweet_feature_values(tweet))
-            # vector.extend(self.map_tweet_n_gram_values(tweet))
+            vector.extend(self.map_tweet_n_gram_values(tweet))
         return vector
 
     def predict(self , tweet):
@@ -185,6 +184,3 @@ class TopicOriented(SelfTraining):
         f_p_max_label = self.commons.get_labels(f_p_max , predict_proba_0[ f_p_key ])
         return f_p_max_label
 
-c = Constants()
-s = SelfTraining(20631, 10, 10, 1, c.TRAIN_2017, c.TEST_2017, 0.1, 0.1)
-s.tune_run()

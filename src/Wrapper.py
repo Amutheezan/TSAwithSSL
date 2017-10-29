@@ -1,7 +1,5 @@
 import time
 import warnings
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import PredefinedSplit
 import numpy as np
 from sklearn import preprocessing as pr, svm
 from SystemStore import *
@@ -85,59 +83,6 @@ class Wrapper:
         self.ds.NEU_SIZE = neu_count
         return
 
-    def load_tune_dictionary(self):
-        temp_train_dict = {}
-        temp_tune_dict = {}
-        with open(self.train_contents.get("train_file"), 'r') as main_dataset:
-            main = csv.reader(main_dataset)
-            pos_count = 1
-            neg_count = 1
-            neu_count = 1
-            count = 1
-            for line in main:
-                count += 1
-                if line[ 0 ] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]), self.cons.LABEL_POSITIVE, 1, 1, self.cons.NO_TOPIC, 0]})
-                    pos_count += 1
-
-                if line[ 0 ] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEGATIVE, 1, 1, self.cons.NO_TOPIC, 0]})
-                    neg_count += 1
-
-                if line[ 0 ] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEUTRAL, 1, 1, self.cons.NO_TOPIC, 0]})
-                    neu_count += 1
-        self.ds.TRAIN_DICT = temp_train_dict
-        self.ds.POS_INITIAL = pos_count
-        self.ds.NEG_INITIAL = neg_count
-        self.ds.NEU_INITIAL = neu_count
-        self.ds.POS_SIZE = pos_count
-        self.ds.NEG_SIZE = neg_count
-        self.ds.NEU_SIZE = neu_count
-
-        with open(self.cons.FILE_TUNE , 'r') as tune_dataset:
-            tune = csv.reader(tune_dataset)
-            pos_count = 1
-            neg_count = 1
-            neu_count = 1
-            count = 1
-            for line in tune:
-                count += 1
-                if line[ 0 ] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
-                    temp_tune_dict.update({str(count): [str(line[ 1 ]), self.cons.LABEL_POSITIVE, 1, 1, self.cons.NO_TOPIC, 0]})
-                    pos_count += 1
-
-                if line[ 0 ] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
-                    temp_tune_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEGATIVE, 1, 1, self.cons.NO_TOPIC, 0]})
-                    neg_count += 1
-
-                if line[ 0 ] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
-                    temp_tune_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEUTRAL, 1, 1, self.cons.NO_TOPIC, 0]})
-                    neu_count += 1
-
-        self.ds.TUNE_DICT = temp_tune_dict
-        return
-    
     def save_result(self):
         actual = []
         predicted = []
@@ -362,71 +307,6 @@ class Wrapper:
         self.generate_vectors_and_labels()
         self.make_model(self.cons.NO_TOPIC)
         self.save_result()
-
-    def tune_run(self):
-        self.load_tune_dictionary()
-        print "load tune dictionary"
-        self.generate_vectors_and_labels()
-        print "generated vectors"
-        self.do_tuning()
-        
-    def do_tuning(self):
-        vectors = self.ds._get_vectors_(0)
-        labels = self.ds._get_labels_(0)
-        for label in self.cons.LABEL_TYPES:
-            vec , lab = self.load_matrix_sub(self.ds.TUNE_DICT , 0 , label)
-            vectors += vec
-            labels += lab
-        vectors_scaled = pr.scale(vectors)
-        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
-        vectors = vectors_normalized
-        vectors = vectors.tolist()
-        test_fold = []
-        for i in range(1 , len(vectors)):
-            if i < 20631:
-                test_fold.append(-1)
-            else:
-                test_fold.append(0)
-        svr = svm.SVC(class_weight=self.get_class_weight())
-        ps = PredefinedSplit(test_fold=test_fold)
-        kernel_list = [self.cons.KERNEL_RBF]
-
-        initial_ratio = 0.01
-        c_start = 1
-        gamma_start = 1
-        total_range = 128
-        c_end = c_start + total_range
-        gamma_end = gamma_start + total_range
-        c_latest = 0.01
-        gamma_latest = 0.01
-        score_latest = 0.00
-        while True :
-            score_previous = score_latest
-            c_previous = c_latest
-            gamma_previous = gamma_latest
-            c_step = (c_end - c_start)/2
-            gamma_step = (gamma_end - gamma_start)/2
-            c_range = [initial_ratio * i for i in range(c_start, c_end + 1, c_step)]
-            gamma_range = [initial_ratio * i for i in range(gamma_start, gamma_end + 1, gamma_step)]
-            print "range of c" , c_range
-            print "range of gamma", gamma_range
-            parameters = {'kernel': kernel_list , 'C': c_range , 'gamma': gamma_range}
-            grid = GridSearchCV(svr , parameters , scoring='f1_weighted' , n_jobs=-1 , cv=ps)
-            tunes_model = grid.fit(vectors , labels)
-            results = tunes_model.best_params_
-            score_latest = tunes_model.best_score_
-            c_latest = results['C']
-            gamma_latest = results['gamma']
-            if c_latest == c_previous and gamma_latest == gamma_previous \
-                    and (score_latest <= score_previous or total_range == 1):
-                break
-            else:
-                c_start = int(max(1, c_latest * 100 - total_range /4))
-                c_end = int(c_latest * 100 + total_range / 4)
-                gamma_start = int(max(1, gamma_latest * 100 - total_range/4))
-                gamma_end = int(gamma_latest * 100 + total_range / 4)
-                total_range = total_range/2
-        print c_latest, gamma_latest
 
     def do_training(self):
         self.ds.CURRENT_ITERATION = 0
