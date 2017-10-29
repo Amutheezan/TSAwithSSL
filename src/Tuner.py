@@ -227,7 +227,7 @@ class Tuner:
             c_latest = results[ 'C' ]
             gamma_latest = results[ 'gamma' ]
             if c_latest == c_previous and gamma_latest == gamma_previous \
-                    and (score_latest <= score_previous or total_range == 1):
+                    and (score_latest <= score_previous or total_range == 2):
                 break
             else:
                 c_start = int(max(1 , c_latest * 100 - total_range / 4))
@@ -245,5 +245,5 @@ class Tuner:
         return vector
 
 c = Constants()
-t = Tuner(20631, c.TRAIN_2013)
+t = Tuner(20631, c.TRAIN_2017)
 t.tune_run()
