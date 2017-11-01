@@ -2,7 +2,7 @@ import sys
 
 from Training import *
 from SystemStore import *
-from PyQt4 import QtGui , QtCore
+from PyQt4 import QtGui, QtCore
 
 
 class Visualizer(QtGui.QMainWindow):
@@ -69,7 +69,8 @@ class Visualizer(QtGui.QMainWindow):
     def _config_change_(self):
         confidence_val = int(self.slider_confidence.value())
         confidence_text = "Confidence is " + str((0.01 * confidence_val))
-        self.slider_confidence_diff.setMaximum(confidence_val - 34)
+        self.slider_confidence_diff.setMinimum(abs(confidence_val - (100 - confidence_val)))
+        self.slider_confidence_diff.setMaximum(confidence_val -1 )
         self.slider_confidence.setToolTip(confidence_text)
         self.confidence_val.setText(confidence_text)
 
@@ -162,9 +163,9 @@ class Visualizer(QtGui.QMainWindow):
         self.confidence_val.resize(200, 30)
         self.confidence_val.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.slider_confidence_diff = QtGui.QSlider(QtCore.Qt.Horizontal , self)
-        self.slider_confidence_diff.setMinimum(0)
-        self.slider_confidence_diff.setMaximum(56)
-        self.slider_confidence_diff.setValue(10)
+        self.slider_confidence_diff.setMinimum(80)
+        self.slider_confidence_diff.setMaximum(89)
+        self.slider_confidence_diff.setValue(85)
         self.slider_confidence_diff.setTickPosition(QtGui.QSlider.TicksBothSides)
         self.slider_confidence_diff.setTickInterval(5)
         self.slider_confidence_diff.valueChanged.connect(self._config_diff_change_)
@@ -176,7 +177,7 @@ class Visualizer(QtGui.QMainWindow):
         self.confidence_diff.move(60 , 290)
         self.confidence_diff.resize(140 , 30)
         self.confidence_val_diff = QtGui.QLabel(self)
-        self.confidence_val_diff.setText("Difference is 0.1")
+        self.confidence_val_diff.setText("Difference is 0.85")
         self.confidence_val_diff.move(440 , 290)
         self.confidence_val_diff.resize(200 , 30)
         self.confidence_val_diff.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
@@ -204,7 +205,7 @@ class Visualizer(QtGui.QMainWindow):
         self.prediction.move(60 , 510)
         self.prediction.resize(180, 30)
         self.setGeometry(375 , 100  , 620  , 540)
-        self.setWindowTitle('TSAwithSSL, v0.1.2.5_12')
+        self.setWindowTitle('TSAwithSSL, v0.1.2.5_20171101')
         self.setStyleSheet("background-color: #1dcaff; color: #383a39;")
         self.setWindowIcon(QtGui.QIcon('../resource/images/icons/ico.png'))
         self.show()

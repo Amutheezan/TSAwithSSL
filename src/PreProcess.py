@@ -1,13 +1,10 @@
 import re
 import nltk
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk import word_tokenize, pos_tag
 
 
 class PreProcess:
 
     def __init__(self):
-        self.lemmatizer = WordNetLemmatizer()
         self.stop_words = []
         self.slangs = {}
         self._setup_()
