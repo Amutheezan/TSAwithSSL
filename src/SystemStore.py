@@ -87,7 +87,7 @@ class Constants:
     CO_TRAINING_TYPE = "Co-Training"
     TOPIC_BASED_TRAINING_TYPE = "Topic-Based"
 
-    CSV_HEADER = [ "TEST_TYPE" , "POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
+    CSV_HEADER = ["POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "PRE-NEU" , "RE-POS" , "RE-NEG" , "RE-NEU" ,
                    "F1-POS" , "F1-NEG" , "F1-AVG" ]
 
