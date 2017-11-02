@@ -1,11 +1,11 @@
 import sys
-
-from Training import *
-from SystemStore import *
 from PyQt4 import QtGui, QtCore
 
+from SystemStore import *
+from Training import *
 
-class Visualizer(QtGui.QMainWindow):
+
+class Trainer(QtGui.QMainWindow):
     def _get_configuration_(self):
         try:
             label = int(self.label_limit_text.text())
@@ -27,10 +27,10 @@ class Visualizer(QtGui.QMainWindow):
         if training_type not in self.cons.TRAINING_TYPES:
             training_type = self.cons.TRAINING_TYPES[ 0 ]
             self.training_type_selector.setEditText(training_type)
-        train_type = str(self.training_type_selector.currentText())
+        train_type = str(self.train_type_selector.currentText())
         if train_type not in self.cons.TRAIN_TYPES:
             train_type = self.cons.TRAIN_TYPES[0]
-            self.training_type_selector.setEditText(train_type)
+            self.train_type_selector.setEditText(train_type)
         test_type = str(self.test_type_selector.currentText())
         if test_type not in self.cons.TEST_TYPES:
             test_type = self.cons.TEST_TYPES[0]
@@ -43,10 +43,7 @@ class Visualizer(QtGui.QMainWindow):
             confidence_diff = 0.01 * int(self.slider_confidence_diff.value())
         except ValueError:
             confidence_diff = 0.50
-
-        if training_type == self.cons.TOPIC_BASED_TRAINING_TYPE:
-            self.method = TopicOriented(label , un_label , test , iteration, train_type, test_type, confidence, confidence_diff)
-        elif training_type == self.cons.SELF_TRAINING_TYPE:
+        if training_type == self.cons.SELF_TRAINING_TYPE:
             self.method = SelfTraining(label , un_label , test , iteration,train_type, test_type, confidence, confidence_diff)
         elif training_type == self.cons.CO_TRAINING_TYPE:
             self.method = CoTraining(label , un_label , test , iteration,train_type, test_type, confidence, confidence_diff)
@@ -81,7 +78,7 @@ class Visualizer(QtGui.QMainWindow):
         self.confidence_val_diff.setText(confidence_diff_text)
 
     def __init__(self):
-        super(Visualizer , self).__init__()
+        super(Trainer, self).__init__()
         self.cons = Constants()
         self.model_generated = False
         self.label_tts = QtGui.QLabel(self)
@@ -205,7 +202,7 @@ class Visualizer(QtGui.QMainWindow):
         self.prediction.move(60 , 510)
         self.prediction.resize(180, 30)
         self.setGeometry(375 , 100  , 620  , 540)
-        self.setWindowTitle('TSAwithSSL, v0.1.2.5_20171101')
+        self.setWindowTitle('Trainer, v0.1.2.5_20171102')
         self.setStyleSheet("background-color: #1dcaff; color: #383a39;")
         self.setWindowIcon(QtGui.QIcon('../resource/images/icons/ico.png'))
         self.show()
@@ -213,7 +210,7 @@ class Visualizer(QtGui.QMainWindow):
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = Visualizer()
+    ex = Trainer()
     sys.exit(app.exec_())
 
 

@@ -1,10 +1,12 @@
 import time
 import warnings
+
 import numpy as np
 from sklearn import preprocessing as pr, svm
-from SystemStore import *
+
 from Features import *
 from PreProcess import PreProcess
+from SystemStore import *
 
 warnings.filterwarnings('ignore')
 
@@ -55,15 +57,15 @@ class Wrapper:
             for line in main:
                 count += 1
                 if line[ 0 ] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]), self.cons.LABEL_POSITIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    temp_train_dict.update({str(count): [str(line[1]), self.cons.LABEL_POSITIVE, 1, 1]})
                     pos_count += 1
 
                 if line[ 0 ] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEGATIVE, 1, 1, self.cons.NO_TOPIC, 0]})
+                    temp_train_dict.update({str(count): [str(line[1]), self.cons.LABEL_NEGATIVE, 1, 1]})
                     neg_count += 1
 
                 if line[ 0 ] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
-                    temp_train_dict.update({str(count): [str(line[ 1 ]),self.cons.LABEL_NEUTRAL, 1, 1, self.cons.NO_TOPIC, 0]})
+                    temp_train_dict.update({str(count): [str(line[1]), self.cons.LABEL_NEUTRAL, 1, 1]})
                     neu_count += 1
 
         with open(self.cons.FILE_UN_LABELED , 'r') as main_dataset:
@@ -72,7 +74,7 @@ class Wrapper:
             for line in unlabeled:
                 count += 1
                 if un_label_count <= self.UN_LABEL_LIMIT:
-                    temp_train_dict.update({str(count): [ str(line[ 0 ]) , self.cons.UNLABELED, 0, 0, self.cons.NO_TOPIC, 0 ]})
+                    temp_train_dict.update({str(count): [str(line[0]), self.cons.UNLABELED, 0, 0]})
                     un_label_count += 1
         self.ds.TRAIN_DICT = temp_train_dict
         self.ds.POS_INITIAL = pos_count
@@ -139,12 +141,8 @@ class Wrapper:
 
     def load_matrix_sub(self , process_dict , mode , label):
         limit = self.LABEL_LIMIT
-        if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-            vectors = {}
-            labels = {}
-        else:
-            vectors = []
-            labels = []
+        vectors = []
+        labels = []
         if limit != 0:
             keys = process_dict.keys()
             if len(keys) > 0:
@@ -152,17 +150,12 @@ class Wrapper:
                     if label == process_dict.get(key)[1]:
                         line = process_dict.get(key)[0]
                         z = self.map_tweet(line,mode)
-                        if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-                            vectors.update({key : z})
-                            labels.update({key : label})
-                        else:
-                            vectors.append(z)
-                            labels.append(label)
+                        vectors.append(z)
+                        labels.append(label)
         return vectors , labels
 
     def map_tweet_n_gram_values(self , tweet):
         vector = []
-
         preprocessed_tweet = self.pre_pros.pre_process_tweet(tweet)
         pos_tag_tweet = self.pre_pros.pos_tag_string(preprocessed_tweet)
         for n in range(1, self.N_GRAM_LIMIT + 1 , 1):
@@ -188,9 +181,9 @@ class Wrapper:
         self.ds.NEU_SIZE = self.ds.NEU_INITIAL
         if len(self.ds.TRAIN_DICT) > self.LABEL_LIMIT:
             for key in self.ds.TRAIN_DICT.keys():
-                tweet , last_label, last_confidence, is_labeled, last_topic, last_value = self.ds.TRAIN_DICT.get(key)
+                tweet, last_label, last_confidence, is_labeled = self.ds.TRAIN_DICT.get(key)
                 if not is_labeled:
-                    current_label,current_confidence = self.predict_for_iteration(tweet , last_label)
+                    current_label, current_confidence = self.predict_for_iteration(tweet, last_label)
                     if current_label == self.cons.UNLABELED:
                         current_label = last_label
                         current_confidence = last_confidence
@@ -200,7 +193,7 @@ class Wrapper:
                         self.ds.NEG_SIZE += 1
                     elif current_label == self.cons.LABEL_NEUTRAL:
                         self.ds.NEU_SIZE += 1
-                    self.ds.TRAIN_DICT.update({key: [tweet , current_label, current_confidence, is_labeled, last_topic, last_value ]})
+                    self.ds.TRAIN_DICT.update({key: [tweet, current_label, current_confidence, is_labeled]})
         self.ds._increment_iteration_()
         return
 
@@ -214,46 +207,19 @@ class Wrapper:
             self.ds._update_uni_gram_(pos_p , neg_p , neu_p , n, True)
 
         for mode in range(self.NO_OF_MODELS):
-            if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-                vectors_dict = {}
-                labels_dict = {}
-            else:
-                vectors_list = []
-                labels_list = []
+            vectors_list = []
+            labels_list = []
             for label in self.cons.LABEL_TYPES:
                 vec , lab = self.load_matrix_sub(self.ds.TRAIN_DICT , mode , label)
-                if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-                    vectors_dict.update(vec)
-                    labels_dict.update(lab)
-                else:
-                    vectors_list += vec
-                    labels_list += lab
-            if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-                self.ds._dump_vectors_labels_(vectors_dict , labels_dict , mode)
-            else:
-                self.ds._dump_vectors_labels_(vectors_list , labels_list , mode)
+                vectors_list += vec
+                labels_list += lab
+            self.ds._dump_vectors_labels_(vectors_list, labels_list, mode)
         return
 
-    def get_vectors_and_labels(self,mode, topic):
-        full_vectors = self.ds._get_vectors_(mode)
-        full_labels = self.ds._get_labels_(mode)
-        if self.TRAINING_TYPE == self.cons.TOPIC_BASED_TRAINING_TYPE:
-            selected_vectors = []
-            selected_labels = []
-            for key in full_vectors.keys():
-                if self.ds.TRAIN_DICT.get(key)[4] == topic:
-                    selected_vectors.append(full_vectors.get(key))
-                    selected_labels.append(full_labels.get(key))
-                elif topic == self.cons.NO_TOPIC:
-                    selected_vectors.append(full_vectors.get(key))
-                    selected_labels.append(full_labels.get(key))
-            return selected_vectors, selected_labels
-        else:
-            return full_vectors, full_labels
-
-    def generate_model(self , mode , c_parameter , gamma , topic):
+    def generate_model(self, mode, c_parameter, gamma):
         class_weights = self.get_class_weight()
-        vectors,labels = self.get_vectors_and_labels(mode, topic)
+        vectors = self.ds._get_vectors_(mode)
+        labels = self.ds._get_labels_(mode)
         classifier_type = self.cons.DEFAULT_CLASSIFIER
         vectors_scaled = pr.scale(np.array(vectors))
         scaler = pr.StandardScaler().fit(vectors)
@@ -268,10 +234,10 @@ class Wrapper:
             model = model.fit(vectors, labels)
         else:
             model = None
-        self.ds._dump_model_scaler_normalizer_(model , scaler , normalizer , mode, topic)
+        self.ds._dump_model_scaler_normalizer_(model, scaler, normalizer, mode)
         return
 
-    def make_model(self , topic):
+    def make_model(self):
         for mode in range(self.NO_OF_MODELS):
             c_parameter = 0.0
             gamma = 0.0
@@ -284,12 +250,12 @@ class Wrapper:
             if not mode and self.NO_OF_MODELS == 1:
                 c_parameter = self.train_contents.get("c_self")
                 gamma = self.train_contents.get("gamma_self")
-            self.generate_model(mode , c_parameter , gamma , topic)
+            self.generate_model(mode, c_parameter, gamma)
 
-    def transform_tweet(self , tweet , mode, topic):
+    def transform_tweet(self, tweet, mode):
         z = self.map_tweet(tweet , mode)
-        z_scaled = self.ds._get_scalar_(mode, topic).transform(z)
-        z = self.ds._get_normalizer_(mode,topic).transform([ z_scaled ])
+        z_scaled = self.ds._get_scalar_(mode).transform(z)
+        z = self.ds._get_normalizer_(mode).transform([z_scaled])
         z = z[0].tolist()
         return z
 
@@ -305,7 +271,7 @@ class Wrapper:
 
     def common_run(self):
         self.generate_vectors_and_labels()
-        self.make_model(self.cons.NO_TOPIC)
+        self.make_model()
         self.save_result()
 
     def do_training(self):
