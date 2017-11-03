@@ -17,7 +17,7 @@ git clone https://github.com/TSAwithSSL/TSAwithSSL.git
 2. Go to repository, and go to src folder and type the following commands
 ```
 cd ..{REPOSITORY}/src
-python Visualizer.py
+python Trainer.py
 ```
 then following GUI will come 
 
