@@ -211,7 +211,7 @@ class Trainer(QtGui.QMainWindow):
         self.prediction.move(60 , 510)
         self.prediction.resize(180, 30)
         self.setGeometry(375 , 100  , 620  , 540)
-        self.setWindowTitle('Trainer, v0.1.2.5_20171102')
+        self.setWindowTitle('Trainer, v0.1.2.5_20171103')
         self.setStyleSheet("background-color: #1dcaff; color: #383a39;")
         self.setWindowIcon(QtGui.QIcon('../resource/images/icons/ico.png'))
         self.show()

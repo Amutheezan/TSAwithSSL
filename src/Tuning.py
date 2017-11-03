@@ -12,9 +12,10 @@ warnings.filterwarnings('ignore')
 
 
 class Tuning:
-    def __init__(self, label, train_type):
+    def __init__(self, label, train_type, tune_type):
         self.cons = Constants()
         self.train_contents = self.cons.TRAIN_SET.get(train_type)
+        self.tune_contents = self.cons.TUNE_SET.get(tune_type)
         self.pre_pros = PreProcess()
         self.mb = MicroBlog()
         self.ws = WritingStyle()
@@ -63,28 +64,20 @@ class Tuning:
         self.ds.NEG_SIZE = neg_count
         self.ds.NEU_SIZE = neu_count
 
-        with open(self.cons.FILE_TUNE, 'r') as tune_dataset:
+        with open(self.tune_contents.get("tune_file"), 'r') as tune_dataset:
             tune = csv.reader(tune_dataset)
-            pos_count = 1
-            neg_count = 1
-            neu_count = 1
             count = 1
             for line in tune:
                 count += 1
-                if line[0] == self.cons.NAME_POSITIVE and pos_count <= self.POS_COUNT_LIMIT:
+                if line[0] == self.cons.NAME_POSITIVE:
                     temp_tune_dict.update(
                         {str(count): [str(line[1]), self.cons.LABEL_POSITIVE, 1, 1]})
-                    pos_count += 1
-
-                if line[0] == self.cons.NAME_NEGATIVE and neg_count <= self.NEG_COUNT_LIMIT:
+                if line[0] == self.cons.NAME_NEGATIVE:
                     temp_tune_dict.update(
                         {str(count): [str(line[1]), self.cons.LABEL_NEGATIVE, 1, 1]})
-                    neg_count += 1
-
-                if line[0] == self.cons.NAME_NEUTRAL and neu_count <= self.NEU_COUNT_LIMIT:
+                if line[0] == self.cons.NAME_NEUTRAL:
                     temp_tune_dict.update(
                         {str(count): [str(line[1]), self.cons.LABEL_NEUTRAL, 1, 1]})
-                    neu_count += 1
 
         self.ds.TUNE_DICT = temp_tune_dict
         return

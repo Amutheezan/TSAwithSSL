@@ -14,7 +14,13 @@ class Tuner(QtGui.QMainWindow):
         if train_type not in self.cons.TRAIN_TYPES:
             train_type = self.cons.TRAIN_TYPES[0]
             self.train_type_selector.setEditText(train_type)
-        self.method = Tuning(label, train_type)
+
+        tune_type = str(self.tune_type_selector.currentText())
+        if tune_type not in self.cons.TUNE_TYPES:
+            tune_type = self.cons.TUNE_TYPES[0]
+            self.tune_type_selector.setEditText(tune_type)
+
+        self.method = Tuning(label, train_type, tune_type)
 
     def _tune_model_(self):
         self._get_configuration_()
@@ -52,7 +58,7 @@ class Tuner(QtGui.QMainWindow):
         self.tune_model.setStyleSheet("background-color:#383a39; color: #1dcaff;")
         self.tune_model.setToolTip("Click here to tune parameters")
         self.setGeometry(560, 300, 360, 230)
-        self.setWindowTitle('Tuner, v0.1.2.5_20171102')
+        self.setWindowTitle('Tuner, v0.1.2.5_20171103')
         self.setStyleSheet("background-color: #1dcaff; color: #383a39;")
         self.setWindowIcon(QtGui.QIcon('../resource/images/icons/ico.png'))
         self.show()
