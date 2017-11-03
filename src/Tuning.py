@@ -56,6 +56,7 @@ class Tuning:
                     temp_train_dict.update(
                         {str(count): [str(line[1]), self.cons.LABEL_NEUTRAL, 1, 1]})
                     neu_count += 1
+
         self.ds.TRAIN_DICT = temp_train_dict
         self.ds.POS_INITIAL = pos_count
         self.ds.NEG_INITIAL = neg_count

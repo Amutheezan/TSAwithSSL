@@ -1,5 +1,5 @@
 import operator
-import os
+import os  
 import shutil
 
 from sklearn.externals import joblib
@@ -14,34 +14,47 @@ from sklearn.externals import joblib
 # CO_TRAINING PARAMETERS
 
 #  Feature Set 1
-#  {'kernel': 'rbf', 'C': 0.7, 'gamma': 1.0} 0.591580193034
 #  {'kernel': 'rbf', 'C': 0.73, 'gamma': 1.02} 0.593126981136
 
 # Feature Set 0
 # {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651
-# {'kernel': 'rbf', 'C': 0.1, 'gamma': 0.1} 0.0628731514651
+
+
+# 2016
+
+# SELF_TRAINING PARAMETERS
+
+# {'kernel': 'rbf', 'C' : 0.01, 'gamma' :1.29}
+
+# CO_TRAINING PARAMETERS
+
+#  Feature Set 1
+#  {'kernel': 'rbf', 'C': 0.65, 'gamma': 0.65}
+
+# Feature Set 0
+# {'kernel': 'rbf', 'C': 1.61, 'gamma': 0.01}
 
 
 class Constants:
     # Location of files to be loaded
     FILE_LABELED_2013 = "../dataset/main/train/SemEval2013.csv"
-    # FILE_LABELED_2016 = "../dataset/main/train/SemEval2016.csv"
+    FILE_LABELED_2016 = "../dataset/main/train/SemEval2016.csv"
     FILE_UN_LABELED = "../dataset/main/unlabeled/Unlabeled.csv"
     FILE_TUNE_2013 = "../dataset/main/tune/Development2013.csv"
-    # FILE_TUNE_2016 = "../dataset/main/tune/Development2016.csv"
+    FILE_TUNE_2016 = "../dataset/main/tune/Development2016.csv"
     FILE_TEST_2013 = "../dataset/main/test/Twitter2013.csv"
     FILE_TEST_2014 = "../dataset/main/test/Twitter2014.csv"
     FILE_TEST_2015 = "../dataset/main/test/Twitter2015.csv"
     FILE_TEST_2016 = "../dataset/main/test/Twitter2016.csv"
 
     TRAIN_2013 = "SemEval 2013"
-    # TRAIN_2016 = "SemEval 2016"
+    TRAIN_2016 = "SemEval 2016"
     TEST_2013 = "Twitter 2013"
     TEST_2014 = "Twitter 2014"
     TEST_2015 = "Twitter 2015"
     TEST_2016 = "Twitter 2016"
     TUNE_2013 = "Development 2013"
-    # TUNE_2016 = "Development 2016"
+    TUNE_2016 = "Development 2016"
 
     # Constant relevant to Classifier [SVM]
     CLASSIFIER_SVM = "svm"
@@ -64,14 +77,13 @@ class Constants:
     NEG_RATIO_2013 = 0.1511
     NEU_RATIO_2013 = 0.4754
 
-    #
-    # POS_RATIO_2016 = 0.3734
-    # NEG_RATIO_2016 = 0.1511
-    # NEU_RATIO_2016 = 0.4754
+    POS_RATIO_2016 = 0.5177
+    NEG_RATIO_2016 = 0.1416
+    NEU_RATIO_2016 = 0.3407
 
     # Full Data set size
     LABEL_DATA_SET_SIZE_2013 = 9684
-    # LABEL_DATA_SET_SIZE_2016 = 6000
+    LABEL_DATA_SET_SIZE_2016 = 6000
 
     TEST_DATA_SET_SIZE_2013 = 1853
     TEST_DATA_SET_SIZE_2014 = 3813
@@ -91,11 +103,15 @@ class Constants:
         self._setup_()
 
     def _setup_(self):
-        self.TRAINING_TYPES = [self.SELF_TRAINING_TYPE,
-                               self.CO_TRAINING_TYPE]
         self.LABEL_TYPES = [self.LABEL_POSITIVE, self.LABEL_NEGATIVE,self.LABEL_NEUTRAL]
 
-        self.TRAIN_TYPES = [self.TRAIN_2013]
+        self.TRAINING_TYPES = [self.SELF_TRAINING_TYPE, self.CO_TRAINING_TYPE]
+
+        self.TRAIN_TYPES = [self.TRAIN_2013, self.TRAIN_2016]
+
+        self.TEST_TYPES = [self.TEST_2013, self.TEST_2014, self.TEST_2015, self.TEST_2016]
+
+        self.TUNE_TYPES = [self.TUNE_2013, self.TUNE_2016]
 
         self.TRAIN_2013_CONTENTS = {
             "train_file" : self.FILE_LABELED_2013,
@@ -112,8 +128,19 @@ class Constants:
             "size" : self.LABEL_DATA_SET_SIZE_2013
         }
 
-        self.TRAIN_SET = {
-            self.TRAIN_2013: self.TRAIN_2013_CONTENTS,
+        self.TRAIN_2016_CONTENTS = {
+            "train_file" : self.FILE_LABELED_2016,
+            "pos_ratio" : self.POS_RATIO_2016,
+            "neg_ratio" : self.NEG_RATIO_2016,
+            "neu_ratio" : self.NEU_RATIO_2016,
+            "kernel" : self.KERNEL_RBF,
+            "c_0" : 1.61,
+            "gamma_0" : 0.01,
+            "c_1": 0.65 ,
+            "gamma_1": 0.65 ,
+            "c_self": 0.28 ,
+            "gamma_self": 1.00 ,
+            "size" : self.LABEL_DATA_SET_SIZE_2016
         }
 
         self.TEST_2013_CONTENTS = {
@@ -132,19 +159,30 @@ class Constants:
             "test_file" : self.FILE_TEST_2016,
             "size" : self.TEST_DATA_SET_SIZE_2016,
         }
-        self.TEST_TYPES = [self.TEST_2013, self.TEST_2014, self.TEST_2015, self.TEST_2016]
+
+        self.TUNE_2013_CONTENTS = {
+            "tune_file" : self.FILE_TUNE_2013
+        }
+        self.TUNE_2016_CONTENTS = {
+            "tune_file" : self.FILE_TUNE_2016
+        }
+
+        self.TRAIN_SET = {
+            self.TRAIN_2013: self.TRAIN_2013_CONTENTS,
+            self.TRAIN_2016: self.TRAIN_2016_CONTENTS
+        }
+
         self.TEST_SET = {
             self.TEST_2013: self.TEST_2013_CONTENTS,
             self.TEST_2014: self.TEST_2014_CONTENTS,
             self.TEST_2015: self.TEST_2015_CONTENTS,
             self.TEST_2016: self.TEST_2016_CONTENTS,
         }
-        self.TUNE_2013_CONTENTS = {
-            "tune_file" : self.FILE_TUNE_2013
-        }
-        self.TUNE_TYPES = [self.TUNE_2013]
+
+
         self.TUNE_SET = {
             self.TUNE_2013: self.TUNE_2013_CONTENTS,
+            self.TUNE_2016: self.TUNE_2016_CONTENTS
         }
 
 
