@@ -1,7 +1,5 @@
 import sys
 from PyQt4 import QtGui, QtCore
-
-from SystemStore import *
 from Tuning import *
 
 
@@ -11,6 +9,7 @@ class Tuner(QtGui.QMainWindow):
             label = int(self.label_limit_text.text())
         except ValueError:
             label = 10
+
         train_type = str(self.train_type_selector.currentText())
         if train_type not in self.cons.TRAIN_TYPES:
             train_type = self.cons.TRAIN_TYPES[0]

@@ -159,7 +159,7 @@ class Tuning:
         print "load tune dictionary"
         self.generate_vectors_and_labels()
         print "generated vectors"
-        self.do_tuning()
+        self.tune_run()
 
     def tune_run(self):
         vectors = self.ds._get_vectors_(0)

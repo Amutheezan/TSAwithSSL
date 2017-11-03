@@ -11,38 +11,47 @@ class Trainer(QtGui.QMainWindow):
             label = int(self.label_limit_text.text())
         except ValueError:
             label = 10
+
         try:
             un_label = int(self.un_label_limit_text.text())
         except ValueError:
             un_label = 10
+
         try:
             test = int(self.test_limit.text())
         except ValueError:
             test = 10
+
         try:
             iteration = int(self.no_of_iteration.text())
         except ValueError:
             iteration = 1
+
         training_type = str(self.training_type_selector.currentText())
         if training_type not in self.cons.TRAINING_TYPES:
             training_type = self.cons.TRAINING_TYPES[ 0 ]
             self.training_type_selector.setEditText(training_type)
+
         train_type = str(self.train_type_selector.currentText())
         if train_type not in self.cons.TRAIN_TYPES:
             train_type = self.cons.TRAIN_TYPES[0]
             self.train_type_selector.setEditText(train_type)
+
         test_type = str(self.test_type_selector.currentText())
         if test_type not in self.cons.TEST_TYPES:
             test_type = self.cons.TEST_TYPES[0]
             self.test_type_selector.setEditText(test_type)
+
         try:
             confidence = 0.01 * int(self.slider_confidence.value())
         except ValueError:
             confidence = 0.50
+
         try:
             confidence_diff = 0.01 * int(self.slider_confidence_diff.value())
         except ValueError:
             confidence_diff = 0.50
+
         if training_type == self.cons.SELF_TRAINING_TYPE:
             self.method = SelfTraining(label , un_label , test , iteration,train_type, test_type, confidence, confidence_diff)
         elif training_type == self.cons.CO_TRAINING_TYPE:
