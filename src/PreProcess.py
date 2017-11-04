@@ -5,6 +5,9 @@ import nltk
 class PreProcess:
 
     def __init__(self):
+        self.STOP_WORDS_FILE = "../resource/stopWords.txt"
+        self.NEGATION_FILE = "../resource/negation.txt"
+        self.INTERNET_SLANGS_FILE = '../resource/internetSlangs.txt'
         self.stop_words = []
         self.slangs = {}
         self._setup_()
@@ -14,7 +17,7 @@ class PreProcess:
         self.load_internet_slangs_dict()
 
     def load_stop_word_list(self):
-        fp = open("../resource/stopWords.txt" , 'r')
+        fp = open(self.STOP_WORDS_FILE, 'r')
         self.stop_words = [ 'at_user' , 'url' ]
         line = fp.readline()
         while line:
@@ -36,7 +39,7 @@ class PreProcess:
         return result
 
     def negate(self , tweets):
-        fn = open("../resource/negation.txt" , "r")
+        fn = open(self.NEGATION_FILE , "r")
         line = fn.readline()
         negation_list = [ ]
         while line:
@@ -61,7 +64,7 @@ class PreProcess:
         return tweets
 
     def load_internet_slangs_dict(self):
-        fi = open('../resource/internetSlangs.txt' , 'r')
+        fi = open(self.INTERNET_SLANGS_FILE, 'r')
         line = fi.readline()
         while line:
             l = line.split(r',%,')

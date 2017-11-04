@@ -25,13 +25,13 @@ class Wrapper:
         self.commons = Commons(self.cons)
         self.lexicon = Lexicon(self.pre_pros, self.cons)
         self.n_gram = NGram(self.commons ,self.cons, self.pre_pros )
-        self.LABEL_LIMIT = min(self.train_contents.get("size") , label)
+        self.LABEL_LIMIT = min(self.train_contents.get(self.cons.SIZE), label)
         self.UN_LABEL_LIMIT = min(100000 , un_label)
-        self.TEST_LIMIT = min(self.test_contents.get("size") , test)
+        self.TEST_LIMIT = min(self.test_contents.get(self.cons.SIZE), test)
         self.NO_OF_ITERATIONS = max(1, iteration)
-        self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("pos_ratio"))
-        self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("neg_ratio"))
-        self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get("neu_ratio"))
+        self.POS_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get(self.cons.POS_RATIO))
+        self.NEG_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get(self.cons.NEG_RATIO))
+        self.NEU_COUNT_LIMIT = int(self.LABEL_LIMIT * self.train_contents.get(self.cons.NEU_RATIO))
         self.CONFIDENCE = float(confidence)
         self.CONFIDENCE_DIFF = float(confidence_diff)
         self.N_GRAM_LIMIT = 1
@@ -48,7 +48,7 @@ class Wrapper:
 
     def load_training_dictionary(self):
         temp_train_dict = {}
-        with open(self.train_contents.get("train_file") , 'r') as main_dataset:
+        with open(self.train_contents.get(self.cons.TRAIN_FILE), 'r') as main_dataset:
             main = csv.reader(main_dataset)
             pos_count = 1
             neg_count = 1
@@ -90,7 +90,7 @@ class Wrapper:
         predicted = []
         temp_file = None
         limit = self.TEST_LIMIT
-        with open(self.test_contents.get("test_file"), "r") as testFile:
+        with open(self.test_contents.get(self.cons.TEST_FILE), "r") as testFile:
             reader = csv.reader(testFile)
             count = 0
             for line in reader:
@@ -113,9 +113,9 @@ class Wrapper:
         combined =  sizes + (current_iteration,) + result
         print combined
         if current_iteration > 0:
-            temp_file = open(self.final_file +'result.csv',"a+")
+            temp_file = open(self.final_file + 'result.csv', "a+")
         if current_iteration == 0:
-            temp_file = open(self.final_file  +'result.csv',"w+")
+            temp_file = open(self.final_file + 'result.csv', "w+")
         saving_file = csv.writer(temp_file)
         if current_iteration == 0:
             saving_file.writerow(self.cons.CSV_HEADER)
@@ -183,7 +183,7 @@ class Wrapper:
             for key in self.ds.TRAIN_DICT.keys():
                 tweet, last_label, last_confidence, is_labeled = self.ds.TRAIN_DICT.get(key)
                 if not is_labeled:
-                    current_label, current_confidence = self.predict_for_iteration(tweet, last_label)
+                    current_label, current_confidence = self.predict_for_iteration(tweet)
                     if current_label == self.cons.UNLABELED:
                         current_label = last_label
                         current_confidence = last_confidence
@@ -203,8 +203,8 @@ class Wrapper:
             neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEGATIVE , n)
             neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEUTRAL , n)
 
-            self.ds._update_uni_gram_(pos , neg , neu , n, False)
-            self.ds._update_uni_gram_(pos_p , neg_p , neu_p , n, True)
+            self.ds._update_n_gram_(pos, neg, neu, n, False)
+            self.ds._update_n_gram_(pos_p, neg_p, neu_p, n, True)
 
         for mode in range(self.NO_OF_MODELS):
             vectors_list = []
@@ -217,18 +217,18 @@ class Wrapper:
         return
 
     def generate_model(self, mode, c_parameter, gamma):
-        class_weights = self.get_class_weight()
+        class_weights = self.get_class_weight
         vectors = self.ds._get_vectors_(mode)
         labels = self.ds._get_labels_(mode)
         classifier_type = self.cons.DEFAULT_CLASSIFIER
         vectors_scaled = pr.scale(np.array(vectors))
         scaler = pr.StandardScaler().fit(vectors)
-        vectors_normalized = pr.normalize(vectors_scaled , norm='l2')
+        vectors_normalized = pr.normalize(vectors_scaled, norm=self.cons.L2_NORMALIZER)
         normalizer = pr.Normalizer().fit(vectors_scaled)
         vectors = vectors_normalized
         vectors = vectors.tolist()
         if classifier_type == self.cons.CLASSIFIER_SVM:
-            kernel_function = self.train_contents.get("kernel")
+            kernel_function = self.train_contents.get(self.cons.KERNEL)
             model = svm.SVC(kernel=kernel_function , C=c_parameter ,
                             class_weight=class_weights , gamma=gamma , probability=True)
             model = model.fit(vectors, labels)
@@ -242,31 +242,55 @@ class Wrapper:
             c_parameter = 0.0
             gamma = 0.0
             if mode:
-                c_parameter = self.train_contents.get("c_1")
-                gamma = self.train_contents.get("gamma_1")
+                c_parameter = self.train_contents.get(self.cons.C_1)
+                gamma = self.train_contents.get(self.cons.GAMMA_1)
             if not mode and self.NO_OF_MODELS == 2:
-                c_parameter = self.train_contents.get("c_0")
-                gamma = self.train_contents.get("gamma_0")
+                c_parameter = self.train_contents.get(self.cons.C_0)
+                gamma = self.train_contents.get(self.cons.GAMMA_0)
             if not mode and self.NO_OF_MODELS == 1:
-                c_parameter = self.train_contents.get("c_self")
-                gamma = self.train_contents.get("gamma_self")
+                c_parameter = self.train_contents.get(self.cons.C_SELF)
+                gamma = self.train_contents.get(self.cons.GAMMA_SELF)
             self.generate_model(mode, c_parameter, gamma)
 
     def transform_tweet(self, tweet, mode):
         z = self.map_tweet(tweet , mode)
-        z_scaled = self.ds._get_scalar_(mode).transform(z)
-        z = self.ds._get_normalizer_(mode).transform([z_scaled])
+        try:
+            z_scaled = self.ds._get_scalar_(mode).transform(z)
+            z = self.ds._get_normalizer_(mode).transform([z_scaled])
+        except ValueError:
+            z_scaled = self.ds._get_scalar_(mode).transform([z])
+            z = self.ds._get_normalizer_(mode).transform(z_scaled)
         z = z[0].tolist()
         return z
 
+    @property
     def get_class_weight(self):
         pos = self.ds.POS_SIZE
         neg = self.ds.NEG_SIZE
         neu = self.ds.NEU_SIZE
+        is_pos_max = False
+        is_neg_max = False
+        is_neu_max = False
+        maximum = max(pos, neg, neu)
+        if maximum == pos:
+            is_pos_max = True
+        if maximum == neg:
+            is_neg_max = True
+        if maximum == neu:
+            is_neu_max = True
         weights = dict()
-        weights[self.cons.LABEL_POSITIVE] = (1.0 * neu) / pos
-        weights[self.cons.LABEL_NEGATIVE] = (1.0 * neu) / neg
-        weights[self.cons.LABEL_NEUTRAL] = 1.0
+        if is_pos_max:
+            weights[self.cons.LABEL_POSITIVE] = 1.0
+        else:
+            weights[self.cons.LABEL_POSITIVE] = (1.0 * maximum) / pos
+        if is_neg_max:
+            weights[self.cons.LABEL_NEGATIVE] = 1.0
+        else:
+            weights[self.cons.LABEL_NEGATIVE] = (1.0 * maximum) / neg
+        if is_neu_max:
+            weights[self.cons.LABEL_NEUTRAL] = 1.0
+        else:
+            weights[self.cons.LABEL_NEUTRAL] = (1.0 * maximum) / neu
         return weights
 
     def common_run(self):
@@ -286,10 +310,10 @@ class Wrapper:
         time_list.append(time.time())
         print self.commons.temp_difference_cal(time_list)
 
-    def predict(self , tweet):
+    def predict(self, tweet):
         pass
 
-    def predict_for_iteration(self , tweet , last_label):
+    def predict_for_iteration(self, tweet):
         pass
 
     def map_tweet(self , line , mode):

@@ -32,7 +32,7 @@ class SelfTraining(Wrapper):
         else:
             return f_p_l
 
-    def predict_for_iteration(self, tweet , last_label):
+    def predict_for_iteration(self, tweet):
         z_0 = self.transform_tweet(tweet, 0)
         predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[0]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
@@ -73,19 +73,11 @@ class CoTraining(Wrapper):
             if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
                 maxi = max(predict , predict_0)
                 mini = min(predict , predict_0)
-
-                if maxi > 0 and mini < 0:
-                    return self.cons.LABEL_NEUTRAL
-
-                if maxi > 0 and mini == 0:
-                    return self.cons.LABEL_POSITIVE
-
-                if maxi == 0 and mini < 0:
-                    return self.cons.LABEL_NEGATIVE
+                return maxi + mini
             else:
                 return f_p_l
 
-    def predict_for_iteration(self, tweet , last_label):
+    def predict_for_iteration(self, tweet):
         z = self.transform_tweet(tweet, 1)
         z_0 = self.transform_tweet(tweet, 0)
         predict_proba = self.ds._get_model_(1).predict_proba([z]).tolist()[0]
@@ -97,7 +89,7 @@ class CoTraining(Wrapper):
         predict_0 = self.ds._get_model_(0).predict([z_0]).tolist()[0]
 
         if predict == predict_0:
-            return predict, 0.9
+            return predict, self.CONFIDENCE
         else:
             if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
                 return self.cons.UNLABELED, 0

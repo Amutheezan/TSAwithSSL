@@ -1,5 +1,5 @@
 import operator
-import os  
+import os
 import shutil
 
 from sklearn.externals import joblib
@@ -61,6 +61,11 @@ class Constants:
     KERNEL_LINEAR = "linear"
     KERNEL_RBF = "rbf"
 
+    # Normalizer
+    L1_NORMALIZER = "l1"
+    L2_NORMALIZER = "l2"
+    MAX_NORMALIZER = "max"
+
     # Label float values
     LABEL_POSITIVE = 2.0
     LABEL_NEGATIVE = -2.0
@@ -71,6 +76,22 @@ class Constants:
     NAME_POSITIVE = "positive"
     NAME_NEGATIVE = "negative"
     NAME_NEUTRAL = "neutral"
+
+    # Contents related constants
+    TRAIN_FILE = "train_file"
+    TEST_FILE = "test_file"
+    TUNE_FILE = "tune_file"
+    POS_RATIO = "pos_ratio"
+    NEG_RATIO = "neg_ratio"
+    NEU_RATIO = "neu_ratio"
+    KERNEL = "kernel"
+    C_SELF = "c_self"
+    GAMMA_SELF = "gamma_self"
+    C_0 = "c_0"
+    GAMMA_0 = "gamma_0"
+    C_1 = "c_1"
+    GAMMA_1 = "gamma_1"
+    SIZE = "size"
 
     # Training Set Ratio
     POS_RATIO_2013 = 0.3734
@@ -91,8 +112,8 @@ class Constants:
     TEST_DATA_SET_SIZE_2016 = 20633
 
     # training type
-    SELF_TRAINING_TYPE = "Self-Training"
     CO_TRAINING_TYPE = "Co-Training"
+    SELF_TRAINING_TYPE = "Self-Training"
 
     CSV_HEADER = ["POS" , "NEG" , "NEU" , "ITER" , "ACCURACY" ,
                    "PRE-POS" , "PRE-NEG" , "PRE-NEU" , "RE-POS" , "RE-NEG" , "RE-NEU" ,
@@ -105,7 +126,7 @@ class Constants:
     def _setup_(self):
         self.LABEL_TYPES = [self.LABEL_POSITIVE, self.LABEL_NEGATIVE,self.LABEL_NEUTRAL]
 
-        self.TRAINING_TYPES = [self.SELF_TRAINING_TYPE, self.CO_TRAINING_TYPE]
+        self.TRAINING_TYPES = [self.CO_TRAINING_TYPE, self.SELF_TRAINING_TYPE]
 
         self.TRAIN_TYPES = [self.TRAIN_2013, self.TRAIN_2016]
 
@@ -114,57 +135,57 @@ class Constants:
         self.TUNE_TYPES = [self.TUNE_2013, self.TUNE_2016]
 
         self.TRAIN_2013_CONTENTS = {
-            "train_file" : self.FILE_LABELED_2013,
-            "pos_ratio" : self.POS_RATIO_2013,
-            "neg_ratio" : self.NEG_RATIO_2013,
-            "neu_ratio" : self.NEU_RATIO_2013,
-            "kernel" : self.KERNEL_RBF,
-            "c_0" : 0.1,
-            "gamma_0" : 0.1,
-            "c_1": 0.73 ,
-            "gamma_1": 1.02 ,
-            "c_self": 0.28 ,
-            "gamma_self": 1.00 ,
-            "size" : self.LABEL_DATA_SET_SIZE_2013
+            self.TRAIN_FILE: self.FILE_LABELED_2013,
+            self.POS_RATIO: self.POS_RATIO_2013,
+            self.NEG_RATIO: self.NEG_RATIO_2013,
+            self.NEU_RATIO: self.NEU_RATIO_2013,
+            self.KERNEL: self.KERNEL_RBF,
+            self.C_0: 0.1,
+            self.GAMMA_0: 0.1,
+            self.C_1: 0.73,
+            self.GAMMA_1: 1.02,
+            self.C_SELF: 0.28,
+            self.GAMMA_SELF: 1.00,
+            self.SIZE: self.LABEL_DATA_SET_SIZE_2013
         }
 
         self.TRAIN_2016_CONTENTS = {
-            "train_file" : self.FILE_LABELED_2016,
-            "pos_ratio" : self.POS_RATIO_2016,
-            "neg_ratio" : self.NEG_RATIO_2016,
-            "neu_ratio" : self.NEU_RATIO_2016,
-            "kernel" : self.KERNEL_RBF,
-            "c_0" : 1.61,
-            "gamma_0" : 0.01,
-            "c_1": 0.65 ,
-            "gamma_1": 0.65 ,
-            "c_self": 0.28 ,
-            "gamma_self": 1.00 ,
-            "size" : self.LABEL_DATA_SET_SIZE_2016
+            self.TRAIN_FILE: self.FILE_LABELED_2016,
+            self.POS_RATIO: self.POS_RATIO_2016,
+            self.NEG_RATIO: self.NEG_RATIO_2016,
+            self.NEU_RATIO: self.NEU_RATIO_2016,
+            self.KERNEL: self.KERNEL_RBF,
+            self.C_0: 1.61,
+            self.GAMMA_0: 0.01,
+            self.C_1: 0.65,
+            self.GAMMA_1: 0.65,
+            self.C_SELF: 0.28,
+            self.GAMMA_SELF: 1.00,
+            self.SIZE: self.LABEL_DATA_SET_SIZE_2016
         }
 
         self.TEST_2013_CONTENTS = {
-            "test_file" : self.FILE_TEST_2013,
-            "size" : self.TEST_DATA_SET_SIZE_2013,
+            self.TEST_FILE: self.FILE_TEST_2013,
+            self.SIZE: self.TEST_DATA_SET_SIZE_2013,
         }
         self.TEST_2014_CONTENTS = {
-            "test_file" : self.FILE_TEST_2014,
-            "size" : self.TEST_DATA_SET_SIZE_2014,
+            self.TEST_FILE: self.FILE_TEST_2014,
+            self.SIZE: self.TEST_DATA_SET_SIZE_2014,
         }
         self.TEST_2015_CONTENTS = {
-            "test_file" : self.FILE_TEST_2015,
-            "size" : self.TEST_DATA_SET_SIZE_2015,
+            self.TEST_FILE: self.FILE_TEST_2015,
+            self.SIZE: self.TEST_DATA_SET_SIZE_2015,
         }
         self.TEST_2016_CONTENTS = {
-            "test_file" : self.FILE_TEST_2016,
-            "size" : self.TEST_DATA_SET_SIZE_2016,
+            self.TEST_FILE: self.FILE_TEST_2016,
+            self.SIZE: self.TEST_DATA_SET_SIZE_2016,
         }
 
         self.TUNE_2013_CONTENTS = {
-            "tune_file" : self.FILE_TUNE_2013
+            self.TUNE_FILE: self.FILE_TUNE_2013
         }
         self.TUNE_2016_CONTENTS = {
-            "tune_file" : self.FILE_TUNE_2016
+            self.TUNE_FILE: self.FILE_TUNE_2016
         }
 
         self.TRAIN_SET = {
@@ -178,7 +199,6 @@ class Constants:
             self.TEST_2015: self.TEST_2015_CONTENTS,
             self.TEST_2016: self.TEST_2016_CONTENTS,
         }
-
 
         self.TUNE_SET = {
             self.TUNE_2013: self.TUNE_2013_CONTENTS,
@@ -395,7 +415,7 @@ class DataStore:
     def _get_current_iteration_(self):
         return self.CURRENT_ITERATION
 
-    def _update_uni_gram_(self , pos , neg , neu , n_gram, is_pos_tag):
+    def _update_n_gram_(self, pos, neg, neu, n_gram, is_pos_tag):
             if is_pos_tag:
                 self.POS_POST_N_GRAM[str(n_gram)] = pos
                 self.NEG_POST_N_GRAM[str(n_gram)] = neg
