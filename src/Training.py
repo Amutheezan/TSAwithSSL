@@ -20,7 +20,7 @@ class SelfTraining(Wrapper):
             vector.extend(self.map_tweet_n_gram_values(tweet))
         return vector
 
-    def predict(self , tweet , mode = None):
+    def predict(self , tweet):
         z_0 = self.transform_tweet(tweet, 0)
         predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[0]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
@@ -36,7 +36,7 @@ class SelfTraining(Wrapper):
         else:
             return predict_0
 
-    def predict_for_iteration(self, tweet, mode = None):
+    def predict_for_iteration(self, tweet, mode =None):
         z_0 = self.transform_tweet(tweet, 0)
         predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[0]
         f_p , s_p = self.commons.first_next_max(predict_proba_0)
@@ -64,29 +64,39 @@ class CoTraining(Wrapper):
         if not mode:
             return self.map_tweet_n_gram_values(tweet)
 
-    def predict(self , tweet, mode = None):
-        z = self.transform_tweet(tweet, mode)
-        predict_proba = self.ds._get_model_(mode).predict_proba([z]).tolist()[0]
+    def predict(self , tweet):
+        z = self.transform_tweet(tweet, 1)
+        z_0 = self.transform_tweet(tweet, 0)
+        predict_proba = self.ds._get_model_(1).predict_proba([z]).tolist()[0]
+        predict_proba_0 = self.ds._get_model_(0).predict_proba([z_0]).tolist()[0]
         f_p , s_p = self.commons.first_next_max(predict_proba)
         f_p_l = self.commons.get_labels(f_p , predict_proba)
-        predict = self.ds._get_model_(mode).predict([z]).tolist()[0]
+        f_p_0 , s_p_0 = self.commons.first_next_max(predict_proba_0)
+        f_p_l_0 = self.commons.get_labels(f_p_0 , predict_proba_0)
+        sum_predict_proba = self.commons.get_sum_proba(predict_proba , predict_proba_0)
+        f_p_s , s_p_s = self.commons.first_next_max(sum_predict_proba)
+        f_p_l_s = self.commons.get_labels(f_p_s , sum_predict_proba)
 
-        if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
-            return predict
-        else:
+        if f_p > f_p_0:
             return f_p_l
+        elif f_p < f_p_0:
+            return f_p_l_0
+        else:
+            return f_p_l_s
 
     def predict_for_iteration(self, tweet, mode = None):
-        if mode == 1:
-            mode = 0
-        if mode == 0:
-            mode = 1
         z = self.transform_tweet(tweet, mode)
         predict_proba = self.ds._get_model_(mode).predict_proba([z]).tolist()[0]
         f_p , s_p = self.commons.first_next_max(predict_proba)
         f_p_l = self.commons.get_labels(f_p , predict_proba)
-
-        if f_p - s_p < self.CONFIDENCE_DIFF or f_p < self.CONFIDENCE:
-            return self.cons.UNLABELED, 0
+        # print mode, f_p_l , f_p
+        if mode:
+            if f_p - s_p < 0.1 or f_p < 0.5:
+                return self.cons.UNLABELED, 0
+            else:
+                return f_p_l, f_p
         else:
-            return f_p_l,f_p
+            if f_p - s_p < 0.1 or f_p < 0.8:
+                return self.cons.UNLABELED, 0
+            else:
+                return f_p_l, f_p

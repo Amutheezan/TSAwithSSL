@@ -76,16 +76,17 @@ class Wrapper:
                 if un_label_count <= self.UN_LABEL_LIMIT:
                     temp_train_dict.update({str(count): [str(line[0]), self.cons.UNLABELED, 0, 0]})
                     un_label_count += 1
-        self.ds.TRAIN_DICT = temp_train_dict
-        self.ds.POS_INITIAL = pos_count
-        self.ds.NEG_INITIAL = neg_count
-        self.ds.NEU_INITIAL = neu_count
-        self.ds.POS_SIZE = pos_count
-        self.ds.NEG_SIZE = neg_count
-        self.ds.NEU_SIZE = neu_count
+        self.ds.TRAIN_DICT.append(temp_train_dict)
+        self.ds.POS_SIZE.append(pos_count)
+        self.ds.NEG_SIZE.append(neg_count)
+        self.ds.NEU_SIZE.append(neu_count)
+        self.ds.TRAIN_DICT.append(temp_train_dict)
+        self.ds.POS_SIZE.append(pos_count)
+        self.ds.NEG_SIZE.append(neg_count)
+        self.ds.NEU_SIZE.append(neu_count)
         return
 
-    def save_result(self, mode = None):
+    def save_result(self):
         actual = []
         predicted = []
         temp_file = None
@@ -99,7 +100,7 @@ class Wrapper:
                 s = line[0]
                 s_v = self.string_to_label(s)
                 actual.append(s_v)
-                nl = self.predict(tweet, mode)
+                nl = self.predict(tweet)
                 predicted.append(nl)
                 count = count + 1
                 if count >= limit:
@@ -108,9 +109,9 @@ class Wrapper:
         pos = self.ds.POS_SIZE
         neg = self.ds.NEG_SIZE
         neu = self.ds.NEU_SIZE
-        sizes = (pos,neg,neu)
+        sizes = (pos, neg, neu)
         current_iteration = self.ds.CURRENT_ITERATION
-        combined =  sizes + (current_iteration,) + result
+        combined = sizes + (current_iteration,) + result
         print combined
         if current_iteration > 0:
             temp_file = open(self.final_file + 'result.csv', "a+")
@@ -159,9 +160,9 @@ class Wrapper:
         preprocessed_tweet = self.pre_pros.pre_process_tweet(tweet)
         pos_tag_tweet = self.pre_pros.pos_tag_string(preprocessed_tweet)
         for n in range(1, self.N_GRAM_LIMIT + 1 , 1):
-            pos , neg , neu = self.ds._get_n_gram_(n, False)
+            pos , neg , neu = self.ds._get_n_gram_(n, 0, False)
             n_gram_score = self.n_gram.score(preprocessed_tweet , pos , neg , neu , n)
-            pos , neg , neu = self.ds._get_n_gram_(n, True)
+            pos , neg , neu = self.ds._get_n_gram_(n, 0, True)
             post_n_gram_score = self.n_gram.score(pos_tag_tweet , pos , neg , neu , n)
             vector.extend(n_gram_score)
             vector.extend(post_n_gram_score)
@@ -175,47 +176,47 @@ class Wrapper:
         vector.extend(self.lexicon._all_in_lexicon_score_(tweet))
         return vector
 
-    def load_iteration_dict(self, mode):
-        self.ds.POS_SIZE = self.ds.POS_INITIAL
-        self.ds.NEG_SIZE = self.ds.NEG_INITIAL
-        self.ds.NEU_SIZE = self.ds.NEU_INITIAL
-        if len(self.ds.TRAIN_DICT) > self.LABEL_LIMIT:
-            for key in self.ds.TRAIN_DICT.keys():
-                tweet, last_label, last_confidence, is_labeled = self.ds.TRAIN_DICT.get(key)
-                if (not is_labeled) and (last_label == self.cons.UNLABELED):
-                    current_label, current_confidence = self.predict_for_iteration(tweet, mode)
-                    if current_label == self.cons.UNLABELED:
-                        current_label = last_label
-                        current_confidence = last_confidence
-                    elif current_label == self.cons.LABEL_POSITIVE:
-                        self.ds.POS_SIZE += 1
-                    elif current_label == self.cons.LABEL_NEGATIVE:
-                        self.ds.NEG_SIZE += 1
-                    elif current_label == self.cons.LABEL_NEUTRAL:
-                        self.ds.NEU_SIZE += 1
-                    self.ds.TRAIN_DICT.update({key: [tweet, current_label, current_confidence, is_labeled]})
+    def load_iteration_dict(self):
+        for mode in range(self.NO_OF_MODELS):
+            if len(self.ds.TRAIN_DICT[mode]) > self.LABEL_LIMIT:
+                for key in self.ds.TRAIN_DICT[mode].keys():
+                    tweet, last_label, last_confidence, is_labeled = self.ds.TRAIN_DICT[mode].get(key)
+                    if (not is_labeled) and (last_label == self.cons.UNLABELED):
+                        current_label, current_confidence = self.predict_for_iteration(tweet,mode)
+                        if current_label == self.cons.UNLABELED:
+                            current_label = last_label
+                            current_confidence = last_confidence
+                        elif current_label == self.cons.LABEL_POSITIVE:
+                            self.ds.POS_SIZE[mode] += 1
+                        elif current_label == self.cons.LABEL_NEGATIVE:
+                            self.ds.NEG_SIZE[mode] += 1
+                        elif current_label == self.cons.LABEL_NEUTRAL:
+                            self.ds.NEU_SIZE[mode] += 1
+                        self.ds.TRAIN_DICT[mode].update({key: [tweet, current_label, current_confidence, is_labeled]})
+        self.ds._increment_iteration_()
         return
 
-    def generate_vectors_and_labels(self, mode):
-        for n in range(1, self.N_GRAM_LIMIT + 1, 1):
-            pos , pos_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_POSITIVE , n)
-            neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEGATIVE , n)
-            neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT , self.cons.LABEL_NEUTRAL , n)
+    def generate_vectors_and_labels(self):
+        for mode in range(self.NO_OF_MODELS):
+            for n in range(1, self.N_GRAM_LIMIT + 1, 1):
+                pos , pos_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT[mode] , self.cons.LABEL_POSITIVE , n)
+                neg , neg_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT[mode] , self.cons.LABEL_NEGATIVE , n)
+                neu , neu_p = self.n_gram.generate_n_gram_dict(self.ds.TRAIN_DICT[mode] , self.cons.LABEL_NEUTRAL , n)
 
-            self.ds._update_n_gram_(pos, neg, neu, n, False)
-            self.ds._update_n_gram_(pos_p, neg_p, neu_p, n, True)
+                self.ds._update_n_gram_(pos, neg, neu, n, mode, False)
+                self.ds._update_n_gram_(pos_p, neg_p, neu_p, n, mode, True)
 
-        vectors_list = []
-        labels_list = []
-        for label in self.cons.LABEL_TYPES:
-            vec , lab = self.load_matrix_sub(self.ds.TRAIN_DICT , mode , label)
-            vectors_list += vec
-            labels_list += lab
-        self.ds._dump_vectors_labels_(vectors_list, labels_list, mode)
+            vectors_list = []
+            labels_list = []
+            for label in self.cons.LABEL_TYPES:
+                vec, lab = self.load_matrix_sub(self.ds.TRAIN_DICT[mode] , mode , label)
+                vectors_list += vec
+                labels_list += lab
+            self.ds._dump_vectors_labels_(vectors_list, labels_list, mode)
         return
 
     def generate_model(self, mode, c_parameter, gamma):
-        class_weights = self.get_class_weight
+        class_weights = self.get_class_weight(mode)
         vectors = self.ds._get_vectors_(mode)
         labels = self.ds._get_labels_(mode)
         classifier_type = self.cons.DEFAULT_CLASSIFIER
@@ -235,20 +236,20 @@ class Wrapper:
         self.ds._dump_model_scaler_normalizer_(model, scaler, normalizer, mode)
         return
 
-    def make_model(self, mode):
-        # for mode in range(self.NO_OF_MODELS):
-        c_parameter = 0.0
-        gamma = 0.0
-        if mode:
-            c_parameter = self.train_contents.get(self.cons.C_1)
-            gamma = self.train_contents.get(self.cons.GAMMA_1)
-        if not mode and self.NO_OF_MODELS == 2:
-            c_parameter = self.train_contents.get(self.cons.C_0)
-            gamma = self.train_contents.get(self.cons.GAMMA_0)
-        if not mode and self.NO_OF_MODELS == 1:
-            c_parameter = self.train_contents.get(self.cons.C_SELF)
-            gamma = self.train_contents.get(self.cons.GAMMA_SELF)
-        self.generate_model(mode, c_parameter, gamma)
+    def make_model(self):
+        for mode in range(self.NO_OF_MODELS):
+            c_parameter = 0.0
+            gamma = 0.0
+            if mode:
+                c_parameter = self.train_contents.get(self.cons.C_1)
+                gamma = self.train_contents.get(self.cons.GAMMA_1)
+            if not mode and self.NO_OF_MODELS == 2:
+                c_parameter = self.train_contents.get(self.cons.C_0)
+                gamma = self.train_contents.get(self.cons.GAMMA_0)
+            if not mode and self.NO_OF_MODELS == 1:
+                c_parameter = self.train_contents.get(self.cons.C_SELF)
+                gamma = self.train_contents.get(self.cons.GAMMA_SELF)
+            self.generate_model(mode, c_parameter, gamma)
 
     def transform_tweet(self, tweet, mode):
         z = self.map_tweet(tweet , mode)
@@ -261,11 +262,10 @@ class Wrapper:
         z = z[0].tolist()
         return z
 
-    @property
-    def get_class_weight(self):
-        pos = self.ds.POS_SIZE
-        neg = self.ds.NEG_SIZE
-        neu = self.ds.NEU_SIZE
+    def get_class_weight(self, mode):
+        pos = self.ds.POS_SIZE[mode]
+        neg = self.ds.NEG_SIZE[mode]
+        neu = self.ds.NEU_SIZE[mode]
         is_pos_max = False
         is_neg_max = False
         is_neu_max = False
@@ -291,34 +291,24 @@ class Wrapper:
             weights[self.cons.LABEL_NEUTRAL] = (1.0 * maximum) / neu
         return weights
 
-    def common_run(self, mode):
-        self.generate_vectors_and_labels(mode)
-        self.make_model(mode)
-        self.save_result(mode)
+    def common_run(self):
+        self.generate_vectors_and_labels()
+        self.make_model()
+        self.save_result()
 
     def do_training(self):
-
         self.ds.CURRENT_ITERATION = 0
         time_list = [time.time()]
         self.load_training_dictionary()
-        self.common_run(0)
-
+        self.common_run()
         while self.ds.CURRENT_ITERATION < 10:
-
-            self.load_iteration_dict(1)
-            self.ds.CURRENT_ITERATION += 1
-            self.common_run(1)
-            self.ds.CURRENT_ITERATION -= 1
-
-            self.load_iteration_dict(0)
-            self.ds.CURRENT_ITERATION += 1
-            self.common_run(0)
-          
+            self.load_iteration_dict()
+            self.common_run()
 
         time_list.append(time.time())
         print self.commons.temp_difference_cal(time_list)
 
-    def predict(self, tweet, mode = None):
+    def predict(self, tweet):
         pass
 
     def predict_for_iteration(self, tweet, mode = None):

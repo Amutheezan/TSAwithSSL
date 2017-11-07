@@ -333,16 +333,16 @@ class DataStore:
 
     def __init__(self, cons):
         self.cons = cons
-        self.TRAIN_DICT = {}
+        self.TRAIN_DICT = []
         self.TUNE_DICT = {}
 
-        self.POS_INITIAL = 0
-        self.NEG_INITIAL = 0
-        self.NEU_INITIAL = 0
+        self.POS_INITIAL = []
+        self.NEG_INITIAL = []
+        self.NEU_INITIAL = []
 
-        self.POS_SIZE = 0
-        self.NEG_SIZE = 0
-        self.NEU_SIZE = 0
+        self.POS_SIZE = []
+        self.NEG_SIZE = []
+        self.NEU_SIZE = []
 
         self.POS_N_GRAM = {}
         self.NEG_N_GRAM = {}
@@ -415,26 +415,26 @@ class DataStore:
     def _get_current_iteration_(self):
         return self.CURRENT_ITERATION
 
-    def _update_n_gram_(self, pos, neg, neu, n_gram, is_pos_tag):
+    def _update_n_gram_(self, pos, neg, neu, n_gram, mode, is_pos_tag):
             if is_pos_tag:
-                self.POS_POST_N_GRAM[str(n_gram)] = pos
-                self.NEG_POST_N_GRAM[str(n_gram)] = neg
-                self.NEU_POST_N_GRAM[str(n_gram)] = neu
+                self.POS_POST_N_GRAM[str(n_gram) + "___" + str(mode)] = pos
+                self.NEG_POST_N_GRAM[str(n_gram) + "___" + str(mode)] = neg
+                self.NEU_POST_N_GRAM[str(n_gram) + "___" + str(mode)] = neu
             if not is_pos_tag:
-                self.POS_N_GRAM[str(n_gram)] = pos
-                self.NEG_N_GRAM[str(n_gram)] = neg
-                self.NEU_N_GRAM[str(n_gram)] = neu
+                self.POS_N_GRAM[str(n_gram) + "___" + str(mode)] = pos
+                self.NEG_N_GRAM[str(n_gram) + "___" + str(mode)] = neg
+                self.NEU_N_GRAM[str(n_gram) + "___" + str(mode)] = neu
 
-    def _get_n_gram_(self, n_gram, is_pos_tag):
+    def _get_n_gram_(self, n_gram, mode, is_pos_tag):
         pos = {}
         neg = {}
         neu = {}
         if is_pos_tag:
-            pos = self.POS_POST_N_GRAM.get(str(n_gram))
-            neg = self.NEG_POST_N_GRAM.get(str(n_gram))
-            neu = self.NEU_POST_N_GRAM.get(str(n_gram))
+            pos = self.POS_POST_N_GRAM.get(str(n_gram) + "___" + str(mode))
+            neg = self.NEG_POST_N_GRAM.get(str(n_gram) + "___" + str(mode))
+            neu = self.NEU_POST_N_GRAM.get(str(n_gram) + "___" + str(mode))
         if not is_pos_tag:
-            pos = self.POS_N_GRAM.get(str(n_gram))
-            neg = self.NEG_N_GRAM.get(str(n_gram))
-            neu = self.NEU_N_GRAM.get(str(n_gram))
+            pos = self.POS_N_GRAM.get(str(n_gram) + "___" + str(mode))
+            neg = self.NEG_N_GRAM.get(str(n_gram) + "___" + str(mode))
+            neu = self.NEU_N_GRAM.get(str(n_gram) + "___" + str(mode))
         return  pos,neg, neu
