@@ -354,7 +354,7 @@ class DataStore:
 
         self.CURRENT_ITERATION = 0
 
-        self.SUB_DIRECTORY = [self.VECTOR_TEMP_STORE,self.LABEL_TEMP_STORE,self.MODEL_TEMP_STORE,self.SCALAR_TEMP_STORE,self.NORMALIZER_TEMP_STORE]
+        self.SUB_DIRECTORY = [self.VECTOR_TEMP_STORE, self.LABEL_TEMP_STORE, self.MODEL_TEMP_STORE,self.SCALAR_TEMP_STORE,self.NORMALIZER_TEMP_STORE]
         self._create_directories_()
 
     def _create_directories_(self):
